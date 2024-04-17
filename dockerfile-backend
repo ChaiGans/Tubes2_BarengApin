@@ -1,0 +1,6 @@
+# Dockerfile-backend
+FROM golang:latest
+WORKDIR /app
+COPY ./src/backend /app
+RUN go build -o main .
+CMD ["./main"]
