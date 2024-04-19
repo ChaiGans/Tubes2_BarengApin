@@ -6,61 +6,76 @@ import (
 	"time"
 )
 
-
 func bfs(startURL, targetURL string) ([]string, int, int, int64, error) {
     startTime := time.Now()
-    queue := [][]string{{startURL}}
+    var wg sync.WaitGroup
+    var mu sync.Mutex
     visited := make(map[string]bool)
     visited[startURL] = true
     numChecked := 0
 
-    var mu sync.Mutex
-    var wg sync.WaitGroup
+    queue := [][]string{{startURL}}
     results := make(chan []string)
+    done := make(chan bool)
 
-    processLinks := func(path []string) {
+    // Worker function 
+    processURLs := func(paths [][]string) {
         defer wg.Done()
-        currentURL := path[len(path)-1]
-        numChecked++
+        localQueue := [][]string{}
 
-        links, err := scrapeWikipediaLinksAsync(currentURL)
-        if err != nil {
-            fmt.Println("Error scraping:", err)
-            return
+        for _, path := range paths {
+            currentURL := path[len(path)-1]
+
+            mu.Lock()
+            numChecked++
+            mu.Unlock()
+
+            links, err := scrapeWikipediaLinksAsync(currentURL)
+            if err != nil {
+                fmt.Println("Error scraping:", err)
+                continue
+            }
+
+            for _, link := range links {
+                if link == targetURL {
+                    results <- append(path, link)
+                    return
+                }
+
+                mu.Lock()
+                if !visited[link] {
+                    visited[link] = true
+                    newPath := append([]string{}, path...)
+                    newPath = append(newPath, link)
+                    localQueue = append(localQueue, newPath)
+                }
+                mu.Unlock()
+            }
         }
 
         mu.Lock()
-        for _, link := range links {
-            if link == targetURL {
-                results <- append(path, link)
-                mu.Unlock()
-                return
-            }
-            if !visited[link] {
-                visited[link] = true
-                newPath := append([]string{}, path...)
-                newPath = append(newPath, link)
-                queue = append(queue, newPath)
-            }
-        }
+        queue = append(queue, localQueue...)
         mu.Unlock()
     }
 
-    for len(queue) > 0 {
-        nextQueue := [][]string{}
-        for _, path := range queue {
+    go func() {
+        for len(queue) > 0 {
+            currentBatch := queue
+            queue = nil // Clear Queue
+
             wg.Add(1)
-            go processLinks(path)
+            go processURLs(currentBatch) // Process current batch to new goroutine
+
+            wg.Wait() // wait all goroutines  finish before processing the next level
         }
-        wg.Wait() // Wait for all goroutines to finish before moving to the next level
-        queue = nextQueue
-    }
+        close(done)
+    }()
 
     select {
     case path := <-results:
         duration := time.Since(startTime).Milliseconds()
         return path, len(path), numChecked, duration, nil
-    default:
+    case <-done:
         return nil, 0, numChecked, time.Since(startTime).Milliseconds(), fmt.Errorf("no path found from %s to %s", startURL, targetURL)
     }
 }
