@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	"time"
 )
 
 // func extractTitleFromURL(wikiURL string) (string, error) {
@@ -74,41 +73,41 @@ func IDS(starting_title_link string, goal_title_link string) ([]string, error) {
     return nil, fmt.Errorf("goal not found after depth %d", i)
 }
 
-func main() {
-	start := time.Now()
+// func main() {
+// 	start := time.Now()
 
-	fmt.Println("Backend is running")
-	titleToSearch := "Joko Widodo"
-	goalSearch := "Pornography"
+// 	fmt.Println("Backend is running")
+// 	titleToSearch := "Joko Widodo"
+// 	goalSearch := "Pornography"
 
-    title_to_search_link := "https://en.wikipedia.org/wiki/" + strings.ReplaceAll(titleToSearch, " ", "_")
-    goal_to_search_link := "https://en.wikipedia.org/wiki/" + strings.ReplaceAll(goalSearch, " ", "_")
+//     title_to_search_link := "https://en.wikipedia.org/wiki/" + strings.ReplaceAll(titleToSearch, " ", "_")
+//     goal_to_search_link := "https://en.wikipedia.org/wiki/" + strings.ReplaceAll(goalSearch, " ", "_")
 
-	result, err := IDS(title_to_search_link, goal_to_search_link);
-	if err != nil {
-		fmt.Print(err)
-	} else {
-		for _, link := range result {
-			fmt.Println(link)
-		}
-	}
+// 	result, err := IDS(title_to_search_link, goal_to_search_link);
+// 	if err != nil {
+// 		fmt.Print(err)
+// 	} else {
+// 		for _, link := range result {
+// 			fmt.Println(link)
+// 		}
+// 	}
 
-	elapsed := time.Since(start)
-	log.Printf("Execution time took %d ms", elapsed.Milliseconds())
-}
-
-
-// Call the fetchLinks function and handle the result
-// links, err := fetchLinks(titleToSearch)
-// if err != nil {
-// 	log.Fatalf("Error fetching links: %v", err)
+// 	elapsed := time.Since(start)
+// 	log.Printf("Execution time took %d ms", elapsed.Milliseconds())
 // }
 
-// fmt.Println("Links found:")
-// for _, link := range links {
-// 	fmt.Println(link)
-// }
-// http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-//     fmt.Fprintf(w, "Hello from Backend!")
-// })
-// http.ListenAndServe(":8080", nil)
+
+// // Call the fetchLinks function and handle the result
+// // links, err := fetchLinks(titleToSearch)
+// // if err != nil {
+// // 	log.Fatalf("Error fetching links: %v", err)
+// // }
+
+// // fmt.Println("Links found:")
+// // for _, link := range links {
+// // 	fmt.Println(link)
+// // }
+// // http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+// //     fmt.Fprintf(w, "Hello from Backend!")
+// // })
+// // http.ListenAndServe(":8080", nil)

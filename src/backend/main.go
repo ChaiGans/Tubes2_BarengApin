@@ -2,90 +2,86 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"net/url"
+	"net/http"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
-func extractTitleFromURL(wikiURL string) (string, error) {
-    parsedURL, err := url.Parse(wikiURL)
-    if err != nil {
-        return "", err
-    }
-
-    pathSegments := strings.Split(parsedURL.Path, "/")
-    if len(pathSegments) < 2 {
-        return "", fmt.Errorf("invalid Wikipedia URL format")
-    }
-    articleTitleEncoded := pathSegments[len(pathSegments)-1]
-
-    articleTitle, err := url.QueryUnescape(articleTitleEncoded)
-    if err != nil {
-        return "", err
-    }
-    return strings.ReplaceAll(articleTitle, "_", " "), nil
+type Input struct {
+	StartTitle string `json:"StartTitle"`
+	GoalTitle  string `json:"GoalTitle"`
+	AlgoChoice int    `json:"AlgoChoice"`
 }
 
-func DFS(depth int, starting_title string, goal_title string, current_depth int, temp_string_save []string) ([]string, error) {
-    if current_depth > depth {
-        return nil, fmt.Errorf("reached maximum depth")
-    }
-
-    links, err := fetchLinks(starting_title)
-    if err != nil {
-        return nil, fmt.Errorf("error fetching links: %v", err)
-    }
-
-    for _, link := range links {
-        title, err := extractTitleFromURL(link)
-
-        if strings.EqualFold(title, goal_title) {
-            return append(temp_string_save, link), nil
-        }
-
-        // Append the current title to the path and recurse
-        new_path := append(temp_string_save, link)
-        result, err := DFS(depth, title, goal_title, current_depth+1, new_path)
-        if err == nil {
-            return result, nil
-        }
-    }
-
-    return nil, fmt.Errorf("goal not found")
+type Result struct {
+	Status      string   `json:"status"`
+	Message     string   `json:"message"`
+	ShortestPath []string `json:"shortestPath,omitempty"`
+	ExecTime int64 `json:"exectime,omitempty"`
 }
 
 func main() {
-	start := time.Now()
+	router := gin.Default()
+	router.POST("/", postInformation)
+	router.Run(":8080")
+}
 
-	fmt.Println("Backend is running")
-	titleToSearch := "Joko Widodo"
-	goalSearch := "Gibran Rakabuming"
+func postInformation(c *gin.Context) {
+	var userInput Input
 
-	result, err := DFS(3, titleToSearch, goalSearch, 0, []string{})
-	if err != nil {
-		fmt.Print(err)
-	} else {
-		for _, link := range result {
-			fmt.Println(link)
-		}
+	if err := c.BindJSON(&userInput); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+		return
 	}
 
-	elapsed := time.Since(start)
-	log.Printf("Execution time took %d ms", elapsed.Milliseconds())
+	result := processInput(userInput)
 
-	// Call the fetchLinks function and handle the result
-	// links, err := fetchLinks(titleToSearch)
-	// if err != nil {
-	// 	log.Fatalf("Error fetching links: %v", err)
-	// }
+	// Return the result as JSON.
+	c.JSON(http.StatusOK, result)
+}
 
-	// fmt.Println("Links found:")
-	// for _, link := range links {
-	// 	fmt.Println(link)
-	// }
-    // http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-    //     fmt.Fprintf(w, "Hello from Backend!")
-    // })
-    // http.ListenAndServe(":8080", nil)
+func processInput(input Input) Result {
+	var result []string
+	var err error
+
+	var starting_title_link string = titleToUrl(input.StartTitle);
+	var goal_title_link string = titleToUrl(input.GoalTitle);
+
+	switch input.AlgoChoice {
+	case 1:
+		start := time.Now()
+		result, err = IDS(starting_title_link, goal_title_link)
+		elapsed := time.Since(start).Milliseconds()
+		if err == nil && result != nil {
+			return Result{
+				Status:      "Success",
+				Message:     fmt.Sprintf("Processed using Algo IDS with StartTitle: %s and GoalTitle: %s", starting_title_link, goal_title_link),
+				ShortestPath: result,
+				ExecTime: elapsed,
+			}
+		}
+	case 2:
+		result, _, _, duration, err := bfs(starting_title_link, goal_title_link)
+		if err == nil && result != nil {
+			return Result{
+				Status:      "Success",
+				Message:     fmt.Sprintf("Processed using Algo 2 with StartTitle: %s and GoalTitle: %s", starting_title_link, goal_title_link),
+				ShortestPath: result,
+				ExecTime: duration,
+			}
+		}
+	default:
+		return Result{Status: "Error", Message: "Invalid algorithm choice"}
+	}
+
+	if err != nil {
+		return Result{Status: "Error", Message: fmt.Sprintf("Error processing request: %v", err)}
+	}
+	return Result{Status: "Error", Message: "Path not found"}
+}
+
+func titleToUrl(title string) string {
+	return "https://en.wikipedia.org/wiki/" + strings.ReplaceAll(title, " ", "_")
 }
