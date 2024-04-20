@@ -6,21 +6,6 @@ import (
 	"strings"
 )
 
-// func extractTitleFromURL(wikiURL string) (string, error) {
-//     parsedURL, err := url.Parse(wikiURL)
-//     if err != nil {
-//         return "", err
-//     }
-
-//     pathSegments := strings.Split(parsedURL.Path, "/")
-//     if len(pathSegments) < 2 {
-//         return "", fmt.Errorf("invalid Wikipedia URL format")
-//     }
-//     articleTitleEncoded := pathSegments[len(pathSegments)-1]
-
-//     return strings.ReplaceAll(articleTitleEncoded, "_", " "), nil
-// }
-
 // Depth-Limit Search
 func DLS(depth int, starting_title_link string, goal_title_link string, current_depth int, temp_string_save []string) ([]string, error) {
     if current_depth > depth {
@@ -37,12 +22,6 @@ func DLS(depth int, starting_title_link string, goal_title_link string, current_
     }
 
     for _, link := range links {
-        // title, err := extractTitleFromURL(link)
-        // if err != nil {
-        //     log.Printf("Error extracting title from URL: %v", err)
-        //     continue
-        // }
-
         if strings.EqualFold(link, goal_title_link) {
             return append(temp_string_save, link), nil
         }
@@ -72,42 +51,3 @@ func IDS(starting_title_link string, goal_title_link string) ([]string, error) {
     }
     return nil, fmt.Errorf("goal not found after depth %d", i)
 }
-
-// func main() {
-// 	start := time.Now()
-
-// 	fmt.Println("Backend is running")
-// 	titleToSearch := "Joko Widodo"
-// 	goalSearch := "Pornography"
-
-//     title_to_search_link := "https://en.wikipedia.org/wiki/" + strings.ReplaceAll(titleToSearch, " ", "_")
-//     goal_to_search_link := "https://en.wikipedia.org/wiki/" + strings.ReplaceAll(goalSearch, " ", "_")
-
-// 	result, err := IDS(title_to_search_link, goal_to_search_link);
-// 	if err != nil {
-// 		fmt.Print(err)
-// 	} else {
-// 		for _, link := range result {
-// 			fmt.Println(link)
-// 		}
-// 	}
-
-// 	elapsed := time.Since(start)
-// 	log.Printf("Execution time took %d ms", elapsed.Milliseconds())
-// }
-
-
-// // Call the fetchLinks function and handle the result
-// // links, err := fetchLinks(titleToSearch)
-// // if err != nil {
-// // 	log.Fatalf("Error fetching links: %v", err)
-// // }
-
-// // fmt.Println("Links found:")
-// // for _, link := range links {
-// // 	fmt.Println(link)
-// // }
-// // http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-// //     fmt.Fprintf(w, "Hello from Backend!")
-// // })
-// // http.ListenAndServe(":8080", nil)

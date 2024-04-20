@@ -79,23 +79,3 @@ func bfs(startURL, targetURL string) ([]string, int, int, int64, error) {
         return nil, 0, numChecked, time.Since(startTime).Milliseconds(), fmt.Errorf("no path found from %s to %s", startURL, targetURL)
     }
 }
-
-
-// func main() {
-//     startURL := "https://en.wikipedia.org/wiki/Indonesia"
-//     targetURL := "https://en.wikipedia.org/wiki/Pornography"
-//     fmt.Println("backend running")
-//     // links, err := scrapeWikipediaLinksAsync(startURL)
-//     // fmt.Println(len(links))
-//     path, length, numChecked, duration, err := bfs(startURL, targetURL)
-//     if err != nil {
-//         fmt.Println(err)
-//         return
-//     }
-
-//     fmt.Println("Path found:")
-//     for _, url := range path {
-//         fmt.Println(url)
-//     }
-//     fmt.Printf("Path length: %d, Articles checked: %d, Time taken: %d ms\n", length, numChecked, duration)
-// }
