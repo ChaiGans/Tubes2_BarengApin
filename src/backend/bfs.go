@@ -30,7 +30,7 @@ func bfs(startURL, targetURL string) ([]string, int, int, int64, error) {
             numChecked++
             mu.Unlock()
 
-            links, err := scrapeWikipediaLinksAsync(currentURL)
+            links, err := fetchLinks(currentURL)
             if err != nil {
                 fmt.Println("Error scraping:", err)
                 continue

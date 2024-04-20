@@ -16,7 +16,7 @@ func DLS(depth int, starting_title_link string, goal_title_link string, current_
         return temp_string_save, nil
     }
 
-    links, err := scrapeWikipediaLinksAsync(starting_title_link)
+    links, err := fetchLinks(starting_title_link)
     if err != nil {
         return nil, fmt.Errorf("error fetching links at title %s: %v", starting_title_link, err)
     }
