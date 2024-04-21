@@ -7,7 +7,7 @@ import (
 )
 
 // Depth-Limit Search
-func DLS(depth int, starting_title_link string, goal_title_link string, current_depth int, temp_string_save []string) ([]string, error) {
+func DLS(depth int, starting_title_link string, goal_title_link string, current_depth int, temp_string_save []string, total_link_iterate *int) ([]string, error) {
     if current_depth > depth {
         return nil, fmt.Errorf("reached maximum depth at depth %d", depth)
     }
@@ -22,12 +22,13 @@ func DLS(depth int, starting_title_link string, goal_title_link string, current_
     }
 
     for _, link := range links {
+        *total_link_iterate++
         if strings.EqualFold(link, goal_title_link) {
             return append(temp_string_save, link), nil
         }
 
         new_path := append(temp_string_save, link)
-        result, err := DLS(depth, link, goal_title_link, current_depth+1, new_path)
+        result, err := DLS(depth, link, goal_title_link, current_depth+1, new_path, total_link_iterate)
         if err == nil {
             return result, nil
         }
@@ -36,12 +37,13 @@ func DLS(depth int, starting_title_link string, goal_title_link string, current_
     return nil, fmt.Errorf("goal not found at depth %d", depth)
 }
 
-func IDS(starting_title_link string, goal_title_link string) ([]string, error) {
+func IDS(starting_title_link string, goal_title_link string) ([]string, error, int) {
     var i int = 0
+    var iteration_number int = 0
     for {
-        result, err := DLS(i, starting_title_link, goal_title_link, 0, []string{starting_title_link})
+        result, err := DLS(i, starting_title_link, goal_title_link, 0, []string{starting_title_link}, &iteration_number)
         if err == nil {
-            return result, nil
+            return result, nil, iteration_number
         }
         log.Printf("No result at depth %d, error: %v", i, err)
         i++
@@ -49,5 +51,5 @@ func IDS(starting_title_link string, goal_title_link string) ([]string, error) {
             break
         }
     }
-    return nil, fmt.Errorf("goal not found after depth %d", i)
+    return nil, fmt.Errorf("goal not found after depth %d", i), iteration_number
 }

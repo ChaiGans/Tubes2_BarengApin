@@ -20,6 +20,7 @@ type Result struct {
 	Message     string   `json:"message"`
 	ShortestPath []string `json:"shortestPath,omitempty"`
 	ExecTime int64 `json:"exectime,omitempty"`
+	NumChecked int `json:"numchecked,omitempty"`
 }
 
 func main() {
@@ -43,7 +44,6 @@ func postInformation(c *gin.Context) {
 }
 
 func processInput(input Input) Result {
-	var result []string
 	var err error
 
 	var starting_title_link string = titleToUrl(input.StartTitle);
@@ -52,7 +52,7 @@ func processInput(input Input) Result {
 	switch input.AlgoChoice {
 	case 1:
 		start := time.Now()
-		result, err = IDS(starting_title_link, goal_title_link)
+		result, err, num_checked := IDS(starting_title_link, goal_title_link)
 		elapsed := time.Since(start).Milliseconds()
 		if err == nil && result != nil {
 			return Result{
@@ -60,16 +60,18 @@ func processInput(input Input) Result {
 				Message:     fmt.Sprintf("Processed using Algo IDS with StartTitle: %s and GoalTitle: %s", starting_title_link, goal_title_link),
 				ShortestPath: result,
 				ExecTime: elapsed,
+				NumChecked: num_checked,
 			}
 		}
 	case 2:
-		result, _, _, _, duration, err := bfs(starting_title_link, goal_title_link)
+		result, _, num_checked, _, duration, err := bfs(starting_title_link, goal_title_link)
 		if err == nil && result != nil {
 			return Result{
 				Status:      "Success",
 				Message:     fmt.Sprintf("Processed using Algo 2 with StartTitle: %s and GoalTitle: %s", starting_title_link, goal_title_link),
 				ShortestPath: result,
 				ExecTime: duration,
+				NumChecked: num_checked,
 			}
 		}
 	default:
