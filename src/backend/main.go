@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -49,7 +51,7 @@ func processInput(input Input) Result {
 
 	var starting_title_link string = titleToUrl(input.StartTitle);
 	var goal_title_link string = titleToUrl(input.GoalTitle);
-
+	fmt.Println(goal_title_link)
 	switch input.AlgoChoice {
 	case 1:
 		start := time.Now()
@@ -86,5 +88,6 @@ func processInput(input Input) Result {
 }
 
 func titleToUrl(title string) string {
-	return "https://en.wikipedia.org/wiki/" + strings.ReplaceAll(title, " ", "_")
+    escapedTitle := url.QueryEscape(strings.ReplaceAll(title, " ", "_"))
+    return "https://en.wikipedia.org/wiki/" + escapedTitle
 }
