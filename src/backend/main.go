@@ -63,7 +63,7 @@ func processInput(input Input) Result {
 			}
 		}
 	case 2:
-		result, _, _, duration, err := bfs(starting_title_link, goal_title_link)
+		result, _, _, _, duration, err := bfs(starting_title_link, goal_title_link)
 		if err == nil && result != nil {
 			return Result{
 				Status:      "Success",

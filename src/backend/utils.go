@@ -1,7 +1,12 @@
 package main
 
 import (
+	"fmt"
+	"math/rand"
+	"regexp"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/gocolly/colly/v2"
 )
@@ -38,7 +43,7 @@ func fetchLinks(startUrl string) ([]string, error) {
         }
     })
 
-    // fmt.Println("Visiting URL:", startUrl) // Log the URL being visited.
+    // fmt.Println("Visiting URL:", startUrl)
     err := c.Visit(startUrl)
     if err != nil {
         return nil, err
@@ -47,63 +52,78 @@ func fetchLinks(startUrl string) ([]string, error) {
     return links, nil
 }
 
-// func scrapeWikipediaLinksAsync(url string) ([]string, error) {
-//     // Initialize the Colly collector
-//     c := colly.NewCollector(
-//         colly.AllowedDomains("en.wikipedia.org","www.wikipedia.org"),
-//         colly.Async(true), // Enable asynchronous scraping
-//     )
 
-//     // Configure the rate limit to be gentle with Wikipedia's servers
-//     c.Limit(&colly.LimitRule{
-//         DomainGlob:  "*wikipedia.org",
-//         Parallelism: 5, // Limit the number of parallel requests
-//     })
+// INI VERSI 2
 
-//     // Set a consistent User-Agent for all requests
-//     c.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+// List of user agents to rotate 
+var userAgents = []string{
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.246",
+    "Mozilla/5.0 (X11; CrOS x86_64 8172.45.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.64 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_2) AppleWebKit/601.3.9 (KHTML, like Gecko) Version/9.0.2 Safari/601.3.9",
+    "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.111 Safari/537.36",
+    "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:15.0) Gecko/20100101 Firefox/15.0.1",
+}
 
-//     // Cache responses to avoid re-fetching unchanged pages
-//     c.CacheDir = "./cache"
+func getRandomUserAgent() string {
+    r := rand.New(rand.NewSource(time.Now().UnixNano()))
+    return userAgents[r.Intn(len(userAgents))]
+}
 
-//     var links []string // List to store the found links
-//     var mu sync.Mutex // Mutex to handle concurrent link append operations safely
+func scrapeWikipediaLinksAsync(url string) ([]string, error) {
+    c := colly.NewCollector(
+        colly.AllowedDomains("en.wikipedia.org"),
+        colly.Async(true), 
+    )
 
-//     // Define the namespaces to be excluded
-//     excludedNamespaces := []string{
-//         "Category:", "Wikipedia:", "File:", "Help:", "Portal:",
-//         "Special:", "Talk:", "User:","Template:", "Template_talk:", "Main_Page",
-//     }
+    c.Limit(&colly.LimitRule{
+        DomainGlob: "*wikipedia.org",
+        Parallelism: 1,
+    })
 
-//     // Regex to filter only valid article links, excluding the namespaces
-//     wikiArticleRegex := regexp.MustCompile(`^https?://en\.wikipedia\.org/wiki/([^#:\s]+)$`)
+    c.UserAgent = getRandomUserAgent()
 
-//     // Handle each anchor tag found during scraping
-//     c.OnHTML("a[href]", func(e *colly.HTMLElement) {
-//         link := e.Request.AbsoluteURL(e.Attr("href"))
-//         if wikiArticleRegex.MatchString(link) {
-//             exclude := false
-//             for _, namespace := range excludedNamespaces {
-//                 if strings.Contains(link, namespace) {
-//                     exclude = true
-//                     break
-//                 }
-//             }
-//             if !exclude {
-//                 mu.Lock()
-//                 links = append(links, link) // Safely append link to the slice
-//                 mu.Unlock()
-//             }
-//         }
-//     })
+    var links []string 
+    var mu sync.Mutex 
 
-//     // Error handling
-//     c.OnError(func(r *colly.Response, err error) {
-//         fmt.Println("Request URL:", r.Request.URL, "failed with response:", r, "Error:", err)
-//     })
+    excludedNamespaces := []string{
+        "Category:", "Wikipedia:", "File:", "Help:", "Portal:",
+        "Special:", "Talk:", "User:", "Template:", "Template_talk:", "Main_Page",
+    }
 
-//     // Visit the URL
-//     err := c.Visit(url)
-//     c.Wait() // Wait for all asynchronous tasks to complete
-//     return links, err // Return the links and any error encountered
-// }
+    wikiArticleRegex := regexp.MustCompile(`^https?://en\.wikipedia\.org/wiki/([^#:\s]+)$`)
+
+    c.OnHTML("a[href]", func(e *colly.HTMLElement) {
+        link := e.Request.AbsoluteURL(e.Attr("href"))
+        if wikiArticleRegex.MatchString(link) {
+            exclude := false
+            for _, namespace := range excludedNamespaces {
+                if strings.Contains(link, namespace) {
+                    exclude = true
+                    break
+                }
+            }
+            if !exclude {
+                mu.Lock()
+                links = append(links, link) 
+                mu.Unlock()
+            }
+        }
+    })
+
+    var err error
+    for i := 0; i < 3; i++ {
+        err = c.Visit(url)
+        c.OnError(func(r *colly.Response, err error) {
+            fmt.Println("Request URL:", r.Request.URL, "failed with response:", r, "Error:", err)
+        })
+        if err == nil {
+            // fmt.Println("done")
+            break 
+        }
+        fmt.Println("Retrying:", url, "Attempt:", i+1)
+        time.Sleep(time.Second * 1) 
+    }
+
+    c.Wait() 
+    return links, err 
+}
