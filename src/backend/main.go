@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
-
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -25,6 +25,7 @@ type Result struct {
 
 func main() {
 	router := gin.Default()
+	router.Use(cors.Default())
 	router.POST("/", postInformation)
 	router.Run(":8080")
 }
