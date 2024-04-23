@@ -47,10 +47,6 @@ func DLS(depth int, startLink, goalLink string, currentDepth int, path []string,
         return nil, fmt.Errorf("reached maximum depth at depth %d", depth)
     }
 
-    if strings.EqualFold(startLink, goalLink) {
-        return path, nil
-    }
-
     visited[startLink] = true
     // log.Printf("Visiting: %s", startLink)
 
