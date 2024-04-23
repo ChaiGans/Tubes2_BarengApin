@@ -4,33 +4,80 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"sync"
 )
 
+// Define a struct to hold the cache and its lock
+type LocalCache struct {
+    mu    sync.RWMutex
+    cache map[string][]string
+}
+
+// Initialize a new local cache
+func NewLocalCache() *LocalCache {
+    return &LocalCache{
+        cache: make(map[string][]string),
+    }
+}
+
+// Fetches data from the cache, returns nil if not found
+func (lc *LocalCache) Get(key string) ([]string, bool) {
+    lc.mu.RLock()
+    value, ok := lc.cache[key]
+    lc.mu.RUnlock()
+    // if ok {
+    //     log.Printf("Cache hit for key: %s", key)
+    // } else {
+    //     log.Printf("Cache miss for key: %s", key)
+    // }
+    return value, ok
+}
+
+// Sets data in the cache
+func (lc *LocalCache) Set(key string, value []string) {
+    lc.mu.Lock()
+    lc.cache[key] = value
+    lc.mu.Unlock()
+    // log.Printf("Set cache for key: %s", key)
+}
+
 // Depth-Limit Search
-func DLS(depth int, starting_title_link string, goal_title_link string, current_depth int, temp_string_save []string, visited map[string]bool, total_link_iterate *int) ([]string, error) {
-    if current_depth > depth {
+func DLS(depth int, startLink, goalLink string, currentDepth int, path []string, visited map[string]bool, totalLinkIterate *int, cache *LocalCache) ([]string, error) {
+    if currentDepth > depth {
         return nil, fmt.Errorf("reached maximum depth at depth %d", depth)
     }
 
-    if strings.EqualFold(starting_title_link, goal_title_link) {
-        return temp_string_save, nil
+    if strings.EqualFold(startLink, goalLink) {
+        return path, nil
     }
 
-    visited[starting_title_link] = true
+    visited[startLink] = true
+    // log.Printf("Visiting: %s", startLink)
 
-    links, err := fetchLinks(starting_title_link)
-    if err != nil {
-        return nil, fmt.Errorf("error fetching links at title %s: %v", starting_title_link, err)
+    links, ok := cache.Get(startLink)
+    if !ok {
+        var err error
+        links, err = fetchLinks(startLink)
+        if err != nil {
+            return nil, fmt.Errorf("error fetching links at title %s: %v", startLink, err)
+        }
+        cache.Set(startLink, links)
     }
 
     for _, link := range links {
         if !visited[link] {
-            *total_link_iterate++
+            *totalLinkIterate++
+            // log.Printf("Visiting new link: %s, Total links visited: %d, At depth : %d", link, *totalLinkIterate, depth)
             visited[link] = true
         }
 
-        new_path := append(temp_string_save, link)
-        result, err := DLS(depth, link, goal_title_link, current_depth+1, new_path, visited, total_link_iterate)
+        if strings.EqualFold(link, goalLink) {
+            return append(path, link), nil
+        }
+
+        new_path := append([]string{}, path...)
+        new_path = append(new_path, link)
+        result, err := DLS(depth, link, goalLink, currentDepth+1, new_path, visited, totalLinkIterate, cache)
         if err == nil {
             return result, nil
         }
@@ -39,15 +86,16 @@ func DLS(depth int, starting_title_link string, goal_title_link string, current_
     return nil, fmt.Errorf("goal not found at depth %d", depth)
 }
 
-func IDS(starting_title_link string, goal_title_link string) ([]string, error, int) {
+func IDS(startLink, goalLink string) ([]string, error, int) {
     var i int = 0
-    var iteration_number int = 0
+    var iterationNumber int = 0
     visited := make(map[string]bool)
+    cache := NewLocalCache()
 
     for {
-        result, err := DLS(i, starting_title_link, goal_title_link, 0, []string{starting_title_link}, visited, &iteration_number)
+        result, err := DLS(i, startLink, goalLink, 0, []string{startLink}, visited, &iterationNumber, cache)
         if err == nil {
-            return result, nil, iteration_number
+            return result, nil, iterationNumber
         }
         log.Printf("No result at depth %d, error: %v", i, err)
         i++
@@ -55,5 +103,5 @@ func IDS(starting_title_link string, goal_title_link string) ([]string, error, i
             break
         }
     }
-    return nil, fmt.Errorf("goal not found after depth %d", i), iteration_number
+    return nil, fmt.Errorf("goal not found after depth %d", i), iterationNumber
 }
