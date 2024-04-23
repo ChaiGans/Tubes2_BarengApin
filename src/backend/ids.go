@@ -7,7 +7,7 @@ import (
 )
 
 // Depth-Limit Search
-func DLS(depth int, starting_title_link string, goal_title_link string, current_depth int, temp_string_save []string, total_link_iterate *int) ([]string, error) {
+func DLS(depth int, starting_title_link string, goal_title_link string, current_depth int, temp_string_save []string, visited map[string]bool, total_link_iterate *int) ([]string, error) {
     if current_depth > depth {
         return nil, fmt.Errorf("reached maximum depth at depth %d", depth)
     }
@@ -16,19 +16,21 @@ func DLS(depth int, starting_title_link string, goal_title_link string, current_
         return temp_string_save, nil
     }
 
+    visited[starting_title_link] = true
+
     links, err := fetchLinks(starting_title_link)
     if err != nil {
         return nil, fmt.Errorf("error fetching links at title %s: %v", starting_title_link, err)
     }
 
     for _, link := range links {
-        *total_link_iterate++
-        if strings.EqualFold(link, goal_title_link) {
-            return append(temp_string_save, link), nil
+        if !visited[link] {
+            *total_link_iterate++
+            visited[link] = true
         }
 
         new_path := append(temp_string_save, link)
-        result, err := DLS(depth, link, goal_title_link, current_depth+1, new_path, total_link_iterate)
+        result, err := DLS(depth, link, goal_title_link, current_depth+1, new_path, visited, total_link_iterate)
         if err == nil {
             return result, nil
         }
@@ -40,8 +42,10 @@ func DLS(depth int, starting_title_link string, goal_title_link string, current_
 func IDS(starting_title_link string, goal_title_link string) ([]string, error, int) {
     var i int = 0
     var iteration_number int = 0
+    visited := make(map[string]bool)
+
     for {
-        result, err := DLS(i, starting_title_link, goal_title_link, 0, []string{starting_title_link}, &iteration_number)
+        result, err := DLS(i, starting_title_link, goal_title_link, 0, []string{starting_title_link}, visited, &iteration_number)
         if err == nil {
             return result, nil, iteration_number
         }
