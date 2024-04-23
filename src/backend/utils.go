@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"regexp"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -13,7 +14,7 @@ import (
 
 // fetchLinks uses Colly to scrape Wikipedia for links on a given page.
 func fetchLinks(startUrl string) ([]string, error) {
-    links := make([]string, 0)
+    links := []string{}
 
     // Define the namespaces to be excluded
     excludedNamespaces := []string{
@@ -38,7 +39,9 @@ func fetchLinks(startUrl string) ([]string, error) {
             }
             if (!exclude) {
                 fullLink := "https://en.wikipedia.org" + link
-                links = append(links, fullLink)
+                if (!slices.Contains(links, fullLink)) {
+                    links = append(links, fullLink)
+                }
             }
         }
     })
