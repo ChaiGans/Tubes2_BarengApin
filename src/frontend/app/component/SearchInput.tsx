@@ -3,6 +3,7 @@ import React, { useState, useEffect, forwardRef } from "react";
 import Image from "next/image";
 import reverse from "../../public/swap.png";
 import search from "../../public/wiki.png";
+import Loading from "../Loading/Loading"
 import { color } from "d3";
 interface Suggestion {
 	title: string;
@@ -19,6 +20,7 @@ const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
 		const [apiResponse, setApiResponse] = useState<any>(null);
 		const [showSuggestions1, setShowSuggestions1] = useState<boolean>(true);
 		const [showLink1, setLink1] = useState<string>("");
+		const [isLoading, setIsLoading] = useState(false);
 		// States for the second input
 		const [searchTerm2, setSearchTerm2] = useState<string>("");
 		const [suggestions2, setSuggestions2] = useState<Suggestion[]>([]);
@@ -119,6 +121,7 @@ const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
 				GoalTitleLink: showLink2,
 				AlgoChoice: algoChoice,
 			};
+			setIsLoading(true); 
 			try {
 				console.log(data);
 				console.log("button clicked");
@@ -138,10 +141,17 @@ const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
 				onSearchResult(result);
 			} catch (error) {
 				console.error("Failed to fetch data:", error);
+			}finally {
+				setIsLoading(false); // Stop loading whether success or fail
 			}
 		};
 		return (
 			<div className="p-4 ml-20 mr-20" ref={ref}>
+        {isLoading && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+				<Loading></Loading>
+            </div>
+        )}
 				<h1 className="text-[#7E5FFF] text-5xl text-center font-black mt-[50px] mb-10">
 					Hyperlink Search
 				</h1>
