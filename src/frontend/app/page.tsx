@@ -1,7 +1,6 @@
+// @ts-nocheck
 "use client";
-import Image from "next/image";
 import React, { useState, useEffect, useRef } from "react";
-import Form from "./Form/page";
 import Navbar from "./component/Navbar";
 import LandingPage from "./LandingPage/page";
 import AboutUs from "./About-Us/page";
@@ -10,6 +9,8 @@ import * as d3 from "d3";
 interface Node {
 	id: string;
 	group: number;
+	x?: number;
+	y?: number;
 }
 
 interface Link {
@@ -23,7 +24,9 @@ interface ForceGraphProps {
 	links: Link[];
 }
 export default function Home() {
-	const [searchResult, setSearchResult] = useState(null);
+	const [searchResult, setSearchResult] = useState<ForceGraphProps | null>(
+		null
+	);
 	const [Duration, setDuration] = useState(null);
 	const [Timevisited, setTimevisited] = useState(null);
 	const homeRef = useRef(null);
@@ -31,7 +34,7 @@ export default function Home() {
 	const servicesRef = useRef(null);
 	const aboutUsRef = useRef(null);
 	const repositoryRef = useRef(null);
-	const handleSearchResult = (result) => {
+	const handleSearchResult = (result: any) => {
 		console.log(result);
 		const d3FormattedData = transformResultToD3Format(JSON.stringify(result));
 		setSearchResult(d3FormattedData);
@@ -69,28 +72,35 @@ export default function Home() {
 	function transformResultToD3Format(resultJson: string): ForceGraphProps {
 		const result = JSON.parse(resultJson);
 		const paths: string[][] = result.shortestPath;
-		console.log(paths);  
+		console.log(paths);
 		const nodeSet = new Set<string>();
 		const links: Link[] = [];
 		paths.forEach((path: string[]) => {
-		  path.forEach((url, index) => {
-			const nodeName = decodeURIComponent(new URL(url).pathname.split("/").pop()!);
-			nodeSet.add(nodeName);
-	  
-			if (index < path.length - 1) {
-			  const nextUrl = path[index + 1];
-			  const nextNodeName = decodeURIComponent(new URL(nextUrl).pathname.split("/").pop()!);
-			  links.push({
-				source: nodeName,
-				target: nextNodeName,
-				value: 1
-			  });
-			}
-		  });
+			path.forEach((url, index) => {
+				const nodeName = decodeURIComponent(
+					new URL(url).pathname.split("/").pop()!
+				);
+				nodeSet.add(nodeName);
+
+				if (index < path.length - 1) {
+					const nextUrl = path[index + 1];
+					const nextNodeName = decodeURIComponent(
+						new URL(nextUrl).pathname.split("/").pop()!
+					);
+					links.push({
+						source: nodeName,
+						target: nextNodeName,
+						value: 1,
+					});
+				}
+			});
 		});
-		const nodes: Node[] = Array.from(nodeSet).map(nodeId => ({ id: nodeId, group: 1 }));
+		const nodes: Node[] = Array.from(nodeSet).map((nodeId) => ({
+			id: nodeId,
+			group: 1,
+		}));
 		return { nodes, links };
-	  }
+	}
 	const ForceGraph: React.FC<ForceGraphProps> = ({ nodes, links }) => {
 		const svgRef = useRef<SVGSVGElement>(null);
 
@@ -217,23 +227,22 @@ export default function Home() {
 	};
 	return (
 		<main className=" min-h-screen bg-[#0E1111] pb-20">
-			<Navbar
-				homeRef={homeRef}
-				docsRef={docsRef}
-				servicesRef={servicesRef}
-				aboutUsRef={aboutUsRef}
-				repositoryRef={repositoryRef}
-			/>
-			<LandingPage ref={homeRef}></LandingPage>
-			<AboutUs ref={aboutUsRef}></AboutUs>
-			<Search onSearchResult={handleSearchResult} ref={servicesRef}></Search>
-			<div className="Graph bg-[#212122] w-[90%] h-[700px] m-auto rounded-xl ml-20 mr-20 mt-20 mb-10">
+			<Navbar />
+			<LandingPage></LandingPage>
+			<AboutUs></AboutUs>
+			<Search onSearchResult={handleSearchResult} id="services"></Search>
+			<div className="runtime-info text-white text-xl ml-20 mr-20 mt-20 px-10 mb-10 flex justify-between">
+				<p className="text-[#7e5fff] font-semibold">
+					<strong>Runtime:</strong> {Duration !== null ? `${Duration} ms` : "-"}
+				</p>
+				<p className="text-[#7e5fff] font-semibold">
+					<strong>Links Visited:</strong>{" "}
+					{Timevisited !== null ? `${Timevisited} links` : "-"}
+				</p>
+			</div>
+			<div className="Graph bg-[#212122] w-[90%] h-[700px] m-auto rounded-xl ml-20 mr-20 mb-10">
 				{searchResult && <ForceGraph {...searchResult} />}
 			</div>
-			<div className="runtime-info text-white text-xl ml-20 mr-20 mt-4 mb-10 flex justify-between">
-            <p className="text-[#7e5fff] font-semibold"><strong>Runtime:</strong> {Duration !== null ? `${Duration} ms` : '-'}</p>
-            <p className="text-[#7e5fff] font-semibold"><strong>Links Visited:</strong> {Timevisited !== null ? `${Timevisited} links` : '-'}</p>
-        	</div>
 		</main>
 	);
 }
