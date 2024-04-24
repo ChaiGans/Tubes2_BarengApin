@@ -24,6 +24,8 @@ interface ForceGraphProps {
 }
 export default function Home() {
 	const [searchResult, setSearchResult] = useState(null);
+	const [Duration, setDuration] = useState(null);
+	const [Timevisited, setTimevisited] = useState(null);
 	const homeRef = useRef(null);
 	const docsRef = useRef(null);
 	const servicesRef = useRef(null);
@@ -33,6 +35,8 @@ export default function Home() {
 		console.log(result);
 		const d3FormattedData = transformResultToD3Format(JSON.stringify(result));
 		setSearchResult(d3FormattedData);
+		setDuration(result.exectime);
+		setTimevisited(result.numchecked);
 	};
 	useEffect(() => {
 		if (searchResult) {
@@ -226,6 +230,10 @@ export default function Home() {
 			<div className="Graph bg-[#212122] w-[90%] h-[700px] m-auto rounded-xl ml-20 mr-20 mt-20 mb-10">
 				{searchResult && <ForceGraph {...searchResult} />}
 			</div>
+			<div className="runtime-info text-white text-xl ml-20 mr-20 mt-4 mb-10 flex justify-between">
+            <p className="text-[#7e5fff] font-semibold"><strong>Runtime:</strong> {Duration !== null ? `${Duration} ms` : '-'}</p>
+            <p className="text-[#7e5fff] font-semibold"><strong>Links Visited:</strong> {Timevisited !== null ? `${Timevisited} links` : '-'}</p>
+        	</div>
 		</main>
 	);
 }
