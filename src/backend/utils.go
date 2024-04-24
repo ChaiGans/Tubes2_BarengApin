@@ -117,14 +117,14 @@ func scrapeWikipediaLinksAsync(url string) ([]string, error) {
     for i := 0; i < 3; i++ {
         err = c.Visit(url)
         c.OnError(func(r *colly.Response, err error) {
-            fmt.Println("Request URL:", r.Request.URL, "failed with response:", r, "Error:", err)
+            fmt.Println("Request URL:", r.Request.URL, "Error:", err)
         })
         if err == nil {
             // fmt.Println("done")
             break 
         }
         fmt.Println("Retrying:", url, "Attempt:", i+1)
-        time.Sleep(time.Second * 1) 
+        time.Sleep(time.Millisecond * 500) 
     }
 
     c.Wait() 
