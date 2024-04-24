@@ -87,7 +87,7 @@ func processInput(input Input) Result {
 			}
 		}
 	case 4:
-		result, err, num_checked, exectime := MultiIDS(input.StartTitleLink, input.GoalTitleLink)
+		result, _, num_checked, exectime, err := bfsMultiPath(input.StartTitleLink, input.GoalTitleLink)
 		if err == nil && result != nil {
 			return Result{
 				Status:      "Success",
