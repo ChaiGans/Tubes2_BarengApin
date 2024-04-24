@@ -3,6 +3,7 @@ import React, { useState, useEffect, forwardRef } from "react";
 import Image from "next/image";
 import reverse from "../../public/swap.png";
 import search from "../../public/wiki.png";
+import { color } from "d3";
 interface Suggestion {
 	title: string;
 	link: string;
@@ -17,21 +18,29 @@ const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
 		const [isFetching1, setIsFetching1] = useState<boolean>(false);
 		const [apiResponse, setApiResponse] = useState<any>(null);
 		const [showSuggestions1, setShowSuggestions1] = useState<boolean>(true);
+		const [showLink1, setLink1] = useState<string>("");
 		// States for the second input
 		const [searchTerm2, setSearchTerm2] = useState<string>("");
 		const [suggestions2, setSuggestions2] = useState<Suggestion[]>([]);
 		const [isFetching2, setIsFetching2] = useState<boolean>(false);
 		const [showSuggestions2, setShowSuggestions2] = useState<boolean>(true);
+		const [showLink2, setLink2] = useState<string>("");
 		const [searchMethod, setSearchMethod] = useState<"BFS" | "IDS">("BFS");
+		const [pathing, setPathing] = useState<"SinglePath" | "MultiplePath">("SinglePath");
 		const toggleSearchMethod = () => {
 			setSearchMethod(searchMethod === "BFS" ? "IDS" : "BFS");
 		};
+		const togglePathing = () => {
+			setPathing(pathing === "SinglePath" ? "MultiplePath" : "SinglePath");
+		  };
 		const handleSuggestionClick = (
 			setSearchTerm: React.Dispatch<React.SetStateAction<string>>,
+			setLink: React.Dispatch<React.SetStateAction<string>>,
 			setShowSuggestions: React.Dispatch<React.SetStateAction<boolean>>,
-			title: string
+			suggestion: Suggestion
 		) => {
-			setSearchTerm(title);
+			setSearchTerm(suggestion.title);
+			setLink(suggestion.link);
 			setShowSuggestions(false);
 		};
 		const swapSearchTerms = () => {
@@ -95,10 +104,20 @@ const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
 			}
 		};
 		const handleSubmit = async () => {
+			let algoChoice;
+			if (searchMethod === "BFS" && pathing === "SinglePath") {
+				algoChoice = 2;
+			} else if (searchMethod === "BFS" && pathing === "MultiplePath") {
+				algoChoice = 4;
+			} else if (searchMethod === "IDS" && pathing === "SinglePath") {
+				algoChoice = 1;
+			} else if (searchMethod === "IDS" && pathing === "MultiplePath") {
+				algoChoice = 3;
+			}
 			const data = {
-				StartTitleLink: searchTerm1,
-				GoalTitleLink: searchTerm2,
-				AlgoChoice: searchMethod === "BFS" ? 2 : 1,
+				StartTitleLink: showLink1,
+				GoalTitleLink: showLink2,
+				AlgoChoice: algoChoice,
 			};
 			try {
 				console.log(data);
@@ -148,8 +167,9 @@ const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
 									onClick={() =>
 										handleSuggestionClick(
 											setSearchTerm1,
+											setLink1,
 											setShowSuggestions1,
-											s.link
+											s
 										)
 									}
 								>
@@ -193,8 +213,9 @@ const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
 									onClick={() =>
 										handleSuggestionClick(
 											setSearchTerm2,
+											setLink2,
 											setShowSuggestions2,
-											s.link
+											s
 										)
 									}
 								>
@@ -227,6 +248,25 @@ const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
 						</div>
 					</div>
 				</div>
+				<div className="Pathing flex">
+					<h1 className="text-[#7E5FFF] text-xl mt-5 font-black mr-10">
+							Path:
+					</h1>
+					<div
+						className={`text-white text-xl mt-5 font-black cursor-pointer `}
+						onClick={() => setPathing("SinglePath")}
+						style={{ color: pathing === "SinglePath" ? "#7E5FFF" : "white" }}
+					>
+						Single-Path
+					</div>
+					<div
+						className={`text-xl mt-5 font-black ml-10 cursor-pointer`}
+						style={{ color: pathing === "MultiplePath" ? "#7E5FFF" : "white"}}
+						onClick={() => setPathing("MultiplePath")}
+					>
+						Multiple-Path
+					</div>
+					</div>
 				<div className="SetButton relative " onClick={handleSubmit}>
 					<button className="text-white bg-[#7E5FFF] py-4 pr-16 pl-8 rounded-[100px] font-black text-xl mt-10">
 						Find Path

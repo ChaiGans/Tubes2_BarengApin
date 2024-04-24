@@ -64,27 +64,29 @@ export default function Home() {
 	// };
 	function transformResultToD3Format(resultJson: string): ForceGraphProps {
 		const result = JSON.parse(resultJson);
-		const shortestPath: string[] = result.shortestPath;
-
-		const nodes: Node[] = shortestPath.map((url, index) => {
-			return {
-				id: decodeURIComponent(new URL(url).pathname.split("/").pop()!),
-				group: 1,
-			};
+		const paths: string[][] = result.shortestPath;
+		console.log(paths);  
+		const nodeSet = new Set<string>();
+		const links: Link[] = [];
+		paths.forEach((path: string[]) => {
+		  path.forEach((url, index) => {
+			const nodeName = decodeURIComponent(new URL(url).pathname.split("/").pop()!);
+			nodeSet.add(nodeName);
+	  
+			if (index < path.length - 1) {
+			  const nextUrl = path[index + 1];
+			  const nextNodeName = decodeURIComponent(new URL(nextUrl).pathname.split("/").pop()!);
+			  links.push({
+				source: nodeName,
+				target: nextNodeName,
+				value: 1
+			  });
+			}
+		  });
 		});
-
-		const links: Link[] = shortestPath.slice(1).map((url, index) => {
-			return {
-				source: decodeURIComponent(
-					new URL(shortestPath[index]).pathname.split("/").pop()!
-				),
-				target: decodeURIComponent(new URL(url).pathname.split("/").pop()!),
-				value: 1,
-			};
-		});
-
+		const nodes: Node[] = Array.from(nodeSet).map(nodeId => ({ id: nodeId, group: 1 }));
 		return { nodes, links };
-	}
+	  }
 	const ForceGraph: React.FC<ForceGraphProps> = ({ nodes, links }) => {
 		const svgRef = useRef<SVGSVGElement>(null);
 
