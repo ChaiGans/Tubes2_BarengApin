@@ -7,7 +7,7 @@ import (
 )
 
 // Depth-Limit Search
-func MultiDLS(depth int, startLink, goalLink string, currentDepth int, path []string, visited map[string]bool, totalLinkIterate *int, cache *LocalCache, multiple_path_save *[][]string) (error) {
+func MultiDLS(depth int, startLink, goalLink string, currentDepth int, path []string, visited map[string]bool, cache *LocalCache, multiple_path_save *[][]string) (error) {
     if currentDepth > depth {
         return nil
     }
@@ -27,9 +27,11 @@ func MultiDLS(depth int, startLink, goalLink string, currentDepth int, path []st
 
     for _, link := range links {
         if !visited[link] {
-            *totalLinkIterate++
-            // log.Printf("Visiting new link: %s, Total links visited: %d, At depth : %d, Current found: %d, Current path length : %d", link, *totalLinkIterate, depth, len(*multiple_path_save), len(path))
+            // log.Printf("Visiting new link: %s, Total links visited: %d, At depth : %d", link, len(visited), depth)
             visited[link] = true
+        } else {
+            // log.Printf("visit alreaddy link : %s", link)
+            continue
         }
 
         if strings.EqualFold(link, goalLink) {
@@ -37,7 +39,7 @@ func MultiDLS(depth int, startLink, goalLink string, currentDepth int, path []st
         } else {
 			new_path := append([]string{}, path...)
         	new_path = append(new_path, link)
-			err := MultiDLS(depth, link, goalLink, currentDepth+1, new_path, visited, totalLinkIterate, cache, multiple_path_save)
+			err := MultiDLS(depth, link, goalLink, currentDepth+1, new_path, visited, cache, multiple_path_save)
             if err != nil {
                 // log.Printf("Error at link %s: %v", link, err)
             }
@@ -52,17 +54,16 @@ func MultiDLS(depth int, startLink, goalLink string, currentDepth int, path []st
 
 func MultiIDS(startLink, goalLink string) ([][]string, error, int, int64) {
     var i int = 0
-    var iterationNumber int = 0
 	multiple_path_save := [][]string{}
-    visited := make(map[string]bool)
     cache := NewLocalCache()
-
+    
     for {
+        visited := make(map[string]bool)
         start := time.Now()
-        err := MultiDLS(i, startLink, goalLink, 0, []string{startLink}, visited, &iterationNumber, cache, &multiple_path_save)
+        err := MultiDLS(i, startLink, goalLink, 0, []string{startLink}, visited, cache, &multiple_path_save)
         elapsed := time.Since(start).Milliseconds()
         if err == nil {
-            return multiple_path_save, nil, iterationNumber, elapsed
+            return multiple_path_save, nil, len(visited), elapsed
         }
         // log.Printf("No result at depth %d, error: %v", i, err)
         i++
@@ -70,20 +71,5 @@ func MultiIDS(startLink, goalLink string) ([][]string, error, int, int64) {
             break
         }
     }
-    return nil, fmt.Errorf("goal not found after depth %d", i), iterationNumber, 0
-}
-
-func makeUnique(arrays [][]string) [][]string {
-	uniqueMap := make(map[string]bool)
-	var uniqueArrays [][]string
-
-	for _, arr := range arrays {
-		key := fmt.Sprintf("%v", arr)
-		if _, ok := uniqueMap[key]; !ok {
-			uniqueMap[key] = true
-			uniqueArrays = append(uniqueArrays, arr)
-		}
-	}
-
-	return uniqueArrays
+    return nil, fmt.Errorf("goal not found after depth %d", i), 0, 0
 }

@@ -42,7 +42,7 @@ func (lc *LocalCache) Set(key string, value []string) {
 }
 
 // Depth-Limit Search
-func DLS(depth int, startLink, goalLink string, currentDepth int, path []string, visited map[string]bool, totalLinkIterate *int, cache *LocalCache) ([]string, error) {
+func DLS(depth int, startLink, goalLink string, currentDepth int, path []string, visited map[string]bool, cache *LocalCache) ([]string, error) {
     if currentDepth > depth {
         return nil, fmt.Errorf("reached maximum depth at depth %d", depth)
     }
@@ -62,9 +62,11 @@ func DLS(depth int, startLink, goalLink string, currentDepth int, path []string,
 
     for _, link := range links {
         if !visited[link] {
-            *totalLinkIterate++
-            // log.Printf("Visiting new link: %s, Total links visited: %d, At depth : %d", link, *totalLinkIterate, depth)
+            // log.Printf("Visiting new link: %s, Total links visited: %d, At depth : %d", link, len(visited), depth)
             visited[link] = true
+        } else {
+            // log.Printf("visit alreaddy link : %s", link)
+            continue
         }
 
         if strings.EqualFold(link, goalLink) {
@@ -73,7 +75,7 @@ func DLS(depth int, startLink, goalLink string, currentDepth int, path []string,
 
         new_path := append([]string{}, path...)
         new_path = append(new_path, link)
-        result, err := DLS(depth, link, goalLink, currentDepth+1, new_path, visited, totalLinkIterate, cache)
+        result, err := DLS(depth, link, goalLink, currentDepth+1, new_path, visited, cache)
         if err == nil {
             return result, nil
         }
@@ -84,14 +86,13 @@ func DLS(depth int, startLink, goalLink string, currentDepth int, path []string,
 
 func IDS(startLink, goalLink string) ([]string, error, int) {
     var i int = 0
-    var iterationNumber int = 0
-    visited := make(map[string]bool)
     cache := NewLocalCache()
-
+    
     for {
-        result, err := DLS(i, startLink, goalLink, 0, []string{startLink}, visited, &iterationNumber, cache)
+        visited := make(map[string]bool)
+        result, err := DLS(i, startLink, goalLink, 0, []string{startLink}, visited, cache)
         if err == nil {
-            return result, nil, iterationNumber
+            return result, nil, len(visited)
         }
         log.Printf("No result at depth %d, error: %v", i, err)
         i++
@@ -99,5 +100,5 @@ func IDS(startLink, goalLink string) ([]string, error, int) {
             break
         }
     }
-    return nil, fmt.Errorf("goal not found after depth %d", i), iterationNumber
+    return nil, fmt.Errorf("goal not found after depth %d", i), 0       
 }
