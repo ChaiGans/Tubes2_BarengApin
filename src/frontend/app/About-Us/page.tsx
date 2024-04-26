@@ -1,6 +1,9 @@
 /* eslint-disable react/display-name */
 import Image from "next/image";
 import son from "../../public/Son.jpg";
+import apin from "../../public/apin.jpg";
+import bert from "../../public/bert.jpg";
+
 import instagram from "../../public/instagram.png";
 import github from "../../public/github.png";
 import React from "react";
@@ -38,7 +41,7 @@ const AboutUs = () => {
 											/>
 										</a>
 										<a
-											href="https://instagram.com/raflyhangga?igshid=OGQ5ZDc2ODk2ZA=="
+											href="https://instagram.com/wilson_yusda?igshid=OGQ5ZDc2ODk2ZA=="
 											target="_blank"
 										>
 											<Image
@@ -53,7 +56,7 @@ const AboutUs = () => {
 							<div className="Card2 rounded-[20px] group relative items-center justify-center overflow-hidden cursor-pointer mx-[50px] my-[30px] border-[#7E5FFF] border-[4px]">
 								<div className="h-[440px] w-64 relative ">
 									<Image
-										src={son}
+										src={apin}
 										alt="Globe"
 										className="object-cover group-hover:rotate-3 group-hover:scale-125 transition-transform h-full w-full grayscale"
 									/>
@@ -73,7 +76,7 @@ const AboutUs = () => {
 											/>
 										</a>
 										<a
-											href="https://instagram.com/wilson_yusda?igshid=OGQ5ZDc2ODk2ZA=="
+											href="https://www.instagram.com/elbertchailes/"
 											target="_blank"
 										>
 											<Image
@@ -88,7 +91,7 @@ const AboutUs = () => {
 							<div className="Card3 rounded-[20px] group relative items-center justify-center overflow-hidden cursor-pointer  mx-[50px] my-[30px] border-[#7E5FFF] border-[4px]">
 								<div className="h-[440px] w-64 relative ">
 									<Image
-										src={son}
+										src={bert}
 										alt="Globe"
 										className="object-cover group-hover:rotate-3 group-hover:scale-125 transition-transform h-full w-full grayscale"
 									/>
@@ -106,7 +109,7 @@ const AboutUs = () => {
 											/>
 										</a>
 										<a
-											href="https://instagram.com/abdulrafirh?igshid=OGQ5ZDc2ODk2ZA=="
+											href="https://www.instagram.com/albert__choe/"
 											target="_blank"
 										>
 											<Image

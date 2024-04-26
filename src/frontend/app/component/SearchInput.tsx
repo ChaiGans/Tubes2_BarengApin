@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import reverse from "../../public/swap.png";
 import search from "../../public/wiki.png";
-import Loading from "../Loading/Loading";
+import Loading from "./Loading";
 import { color } from "d3";
 interface Suggestion {
 	title: string;
@@ -145,7 +145,7 @@ const SearchInput: React.FC<SearchInputProps> = ({ onSearchResult, id }) => {
 		} catch (error) {
 			console.error("Failed to fetch data:", error);
 		} finally {
-			setIsLoading(false); // Stop loading whether success or fail
+			setIsLoading(false); 
 		}
 	};
 	return (
@@ -278,8 +278,8 @@ const SearchInput: React.FC<SearchInputProps> = ({ onSearchResult, id }) => {
 					Multiple-Path
 				</div>
 			</div>
-			<div className="SetButton relative " onClick={handleSubmit}>
-				<button className="text-white bg-[#7E5FFF] py-4 pr-16 pl-8 rounded-[100px] font-black text-xl mt-10">
+			<div className="SetButton relative " >
+				<button className="text-white bg-[#7E5FFF] py-4 pr-16 pl-8 rounded-[100px] font-black text-xl mt-10" onClick={handleSubmit}>
 					Find Path
 				</button>
 				<Image

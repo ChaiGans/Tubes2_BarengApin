@@ -48,29 +48,6 @@ export default function Home() {
 			console.log("Search result:", searchResult);
 		}
 	}, [searchResult]);
-	// const miserables_data = {
-	//     nodes: [
-	// 		{"id": "Valjean", "group": 1},
-	// 		{"id": "Javert", "group": 1},
-	// 		{"id": "Fantine", "group": 2},
-	// 		{"id": "Cosette", "group": 2},
-	// 		{"id": "Marius", "group": 3},
-	// 		{"id": "Enjolras", "group": 3},
-	// 		{"id": "Bishop", "group": 5},
-	// 		{"id": "Myriel", "group": 5},
-	//     ],
-	//     links: [
-	// 		{"source": "Valjean", "target": "Javert", "value": 5},
-	// 		{"source": "Valjean", "target": "Fantine", "value": 5},
-	// 		{"source": "Fantine", "target": "Cosette", "value": 5},
-	// 		{"source": "Valjean", "target": "Cosette", "value": 5},
-	// 		{"source": "Cosette", "target": "Marius", "value": 5},
-	// 		{"source": "Valjean", "target": "Marius", "value": 5},
-	// 		{"source": "Marius", "target": "Enjolras", "value": 5},
-	// 		{"source": "Valjean", "target": "Bishop", "value": 5},
-	// 		{"source": "Bishop", "target": "Myriel", "value": 5},
-	//     ],
-	// };
 	function transformResultToD3Format(resultJson: string): ForceGraphProps {
 		const result = JSON.parse(resultJson);
 		const paths: string[][] = result.shortestPath;
@@ -100,7 +77,6 @@ export default function Home() {
 			});
 		});
 	
-		// Convert nodeSet entries to Node array, using the depth as the 'group'
 		const nodes: Node[] = Array.from(nodeSet).map(([nodeId, depth]) => ({
 			id: nodeId,
 			group: depth
@@ -114,7 +90,7 @@ export default function Home() {
 	
 		useEffect(() => {
 			if (!svgRef.current) return;
-			const width = 1365; // Full width of the container
+			const width = 1365; 
 			const height = 700;
 			const svg = d3.select(svgRef.current);
 			const depthColorMapping = {
@@ -126,7 +102,6 @@ export default function Home() {
 			};
 			svg.selectAll("*").remove();
 	
-			// Define arrowhead marker
 			svg.append("defs")
 				.selectAll("marker")
 				.data(["end"])
@@ -151,13 +126,12 @@ export default function Home() {
 	
 			const content = svg.append("g").attr("class", "content");
 	
-			// Define nodes position on a circle
 			const depthIndices = {};
 			nodes.forEach(node => {
 				if (depthIndices[node.group] === undefined) depthIndices[node.group] = 0;
 				else depthIndices[node.group]++;
-				node.x = 150 + 200 * node.group; // Horizontal position based on depth
-				node.y = 100 + 100 * depthIndices[node.group]; // Vertical position within the same depth
+				node.x = 150 + 200 * node.group; 
+				node.y = 100 + 100 * depthIndices[node.group]; 
 			});
 	
 			const simulation = d3.forceSimulation(nodes)
@@ -196,14 +170,11 @@ export default function Home() {
 				.style("pointer-events", "none")
 				.style("font-weight", "bold");
 	
-			// Determine the maximum depth present in the nodes
 			const maxDepth = Math.max(...nodes.map(n => n.group));
 	
-			// Filter the depthColorMapping object to only include used depths
 			const usedDepths = Object.entries(depthColorMapping)
 				.filter(([depth]) => depth <= maxDepth);
 	
-			// Add legends for used depths
 			const legend = svg.append("g")
 				.attr("class", "legend")
 				.attr("transform", `translate(30, ${height - 50})`) 
