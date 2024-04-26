@@ -64,7 +64,7 @@ func processInput(input Input) Result {
 			}
 		}
 	case 2:
-		result, _, num_checked, _, duration, err := bfs(input.StartTitleLink, input.GoalTitleLink)
+		result, _, num_checked,  duration, err := bfs(input.StartTitleLink, input.GoalTitleLink)
 		array_result = append([][]string{}, result)
 		if err == nil && result != nil {
 			return Result{

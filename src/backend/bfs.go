@@ -7,14 +7,14 @@ import (
 )
 
 
-func bfs(startURL, targetURL string) ([]string, int, int, int, int64, error) {
+func bfs(startURL, targetURL string) ([]string, int, int, int64, error) {
     startTime := time.Now()
     var wg sync.WaitGroup
     var mu sync.Mutex
     visited := make(map[string]bool)
     visited[startURL] = true
     numChecked := 0
-    articleRequested := 0
+    // articleRequested := 0
 
     queue := [][]string{{startURL}}
     results := make(chan []string)
@@ -33,11 +33,11 @@ func bfs(startURL, targetURL string) ([]string, int, int, int, int64, error) {
         for _, path := range paths {
             currentURL := path[len(path)-1]
 
-            mu.Lock()
-            articleRequested++ 
-            mu.Unlock()
+            // mu.Lock()
+            // articleRequested++ 
+            // mu.Unlock()
 
-            links, err := scrapeWikipediaLinksAsync(currentURL)
+            links, err := scrapeWikipediaLinks(currentURL)
 
             // fmt.Println("Done Scrapping", len(links), currentURL)
             if err != nil {
@@ -46,10 +46,6 @@ func bfs(startURL, targetURL string) ([]string, int, int, int, int64, error) {
             }
         
             for _, link := range links {
-                mu.Lock()
-                numChecked++
-                mu.Unlock()
-        
                 if link == targetURL {
                     results <- append(path, link)
                     return
@@ -61,6 +57,7 @@ func bfs(startURL, targetURL string) ([]string, int, int, int, int64, error) {
                     newPath := append([]string{}, path...)
                     newPath = append(newPath, link)
                     localQueue = append(localQueue, newPath)
+                    numChecked++
                 }
                 mu.Unlock()
             }
@@ -91,9 +88,9 @@ func bfs(startURL, targetURL string) ([]string, int, int, int, int64, error) {
     select {
     case path := <-results:
         duration := time.Since(startTime).Milliseconds()
-        return path, len(path), numChecked, articleRequested, duration, nil
+        return path, len(path), numChecked, duration, nil
     case <-done:
-        return nil, 0, numChecked, articleRequested, time.Since(startTime).Milliseconds(), fmt.Errorf("no path found from %s to %s", startURL, targetURL)
+        return nil, 0, numChecked, time.Since(startTime).Milliseconds(), fmt.Errorf("no path found from %s to %s", startURL, targetURL)
     }
 }
 
@@ -133,7 +130,7 @@ func bfsMultiPath(startURL, targetURL string) ([][]string, int, int, int64, erro
                     return
                 }
 
-                links, err := scrapeWikipediaLinksAsync(currentURL)
+                links, err := scrapeWikipediaLinks(currentURL)
                 if err != nil {
                     fmt.Println("Error scraping:", err)
                     return
@@ -143,7 +140,6 @@ func bfsMultiPath(startURL, targetURL string) ([][]string, int, int, int64, erro
                 defer mu.Unlock()
 
                 for _, link := range links {
-                    numChecked++
                     if link == targetURL && (foundLevel == -1 || len(path) == foundLevel) {
                         pathSignature := createPathSignature(append(path, link))
                         if _, exists := resultsMap[pathSignature]; !exists {
@@ -159,6 +155,7 @@ func bfsMultiPath(startURL, targetURL string) ([][]string, int, int, int64, erro
                     if !visited[link] {
                         visited[link] = true
                         levelQueue = append(levelQueue, append([]string(nil), append(path, link)...))
+                        numChecked++
                     }
                 }
             }(path)

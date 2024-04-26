@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"sync"
 )
@@ -53,7 +52,7 @@ func DLS(depth int, startLink, goalLink string, currentDepth int, path []string,
     links, ok := cache.Get(startLink)
     if !ok {
         var err error
-        links, err = fetchLinks(startLink)
+        links, err = scrapeWikipediaLinks(startLink)
         if err != nil {
             return nil, fmt.Errorf("error fetching links at title %s: %v", startLink, err)
         }
@@ -75,9 +74,10 @@ func DLS(depth int, startLink, goalLink string, currentDepth int, path []string,
                     return res, nil
                 }
 		    }
-        } else {
-            // log.Printf("Skipping current link already visited: %s, Total links visited: %d", link, len(visited))
-        }
+        } 
+        // else {
+        //     log.Printf("Skipping current link already visited: %s, Total links visited: %d", link, len(visited))
+        // }
 
         visited[link] = false
     }
@@ -95,7 +95,7 @@ func IDS(startLink, goalLink string) ([]string, error, int) {
         if err == nil {
             return result, nil, len(visited)
         }
-        log.Printf("No result at depth %d, error: %v", i, err)
+        // log.Printf("No result at depth %d, error: %v", i, err)
         i++
         if i > 20 {
             break

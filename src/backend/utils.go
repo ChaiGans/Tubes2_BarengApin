@@ -72,7 +72,7 @@ func getRandomUserAgent() string {
     return userAgents[r.Intn(len(userAgents))]
 }
 
-func scrapeWikipediaLinksAsync(url string) ([]string, error) {
+func scrapeWikipediaLinks(url string) ([]string, error) {
     c := colly.NewCollector(
         colly.AllowedDomains("en.wikipedia.org"),
         colly.Async(true), 
@@ -128,5 +128,19 @@ func scrapeWikipediaLinksAsync(url string) ([]string, error) {
     }
 
     c.Wait() 
-    return links, err 
+    return MakeUnique(links), err 
+}
+
+func MakeUnique(strings []string) []string {
+    uniqueMap := make(map[string]bool)
+    var uniqueStrings []string     
+
+    for _, str := range strings {
+        if _, exists := uniqueMap[str]; !exists {
+            uniqueMap[str] = true
+            uniqueStrings = append(uniqueStrings, str)
+        }
+    }
+
+    return uniqueStrings
 }

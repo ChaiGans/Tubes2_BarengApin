@@ -19,7 +19,7 @@ func MultiDLS(depth int, startLink, goalLink string, currentDepth int, path []st
     links, ok := cache.Get(startLink)
     if !ok {
         var err error
-        links, err = fetchLinks(startLink)
+        links, err = scrapeWikipediaLinks(startLink)
         if err != nil {
             return fmt.Errorf("error fetching links at title %s: %v", startLink, err)
         }
@@ -28,7 +28,7 @@ func MultiDLS(depth int, startLink, goalLink string, currentDepth int, path []st
 
     for _, link := range links {
         if !visited[link] {
-            log.Printf("Visiting new link: %s, Total links visited: %d, At depth : %d, Current len(multiplepathsave) : %d", link, len(visited), depth, len(*multiple_path_save))
+            // log.Printf("Visiting new link: %s, Total links visited: %d, At depth : %d, Current len(multiplepathsave) : %d", link, len(visited), depth, len(*multiple_path_save))
             visited[link] = true
 
             if strings.EqualFold(link, goalLink) {
@@ -38,12 +38,13 @@ func MultiDLS(depth int, startLink, goalLink string, currentDepth int, path []st
                 new_path = append(new_path, link)
                 err := MultiDLS(depth, link, goalLink, currentDepth+1, new_path, visited, cache, multiple_path_save)
                 if err != nil {
-                    // log.Printf("Error at link %s: %v", link, err)
+                    log.Printf("Error at link %s", link)
                 }
 		    }
-        } else {
-            log.Printf("Skipping current link already visited: %s, Total links visited: %d", link, len(visited))
-        }
+        } 
+        // else {
+        //     // log.Printf("Skipping current link already visited: %s, Total links visited: %d", link, len(visited))
+        // }
 
         visited[link] = false
     }
