@@ -2,6 +2,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import Navbar from "./component/Navbar";
+import Image from 'next/image';
 import LandingPage from "./LandingPage/page";
 import AboutUs from "./About-Us/page";
 import Search from "./component/SearchInput";
@@ -27,6 +28,7 @@ export default function Home() {
 	const [searchResult, setSearchResult] = useState<ForceGraphProps | null>(
 		null
 	);
+	const [initialResult, setInitialResult] = useState<string[][]>([]);
 	const [Duration, setDuration] = useState(null);
 	const [Timevisited, setTimevisited] = useState(null);
 	const homeRef = useRef(null);
@@ -38,10 +40,16 @@ export default function Home() {
 	const handleSearchResult = (result: any) => {
 		console.log(result);
 		const d3FormattedData = transformResultToD3Format(JSON.stringify(result));
+		setInitialResult(result.shortestPath);
 		setNumPath(result.shortestPath.length);
 		setSearchResult(d3FormattedData);
 		setDuration(result.exectime);
 		setTimevisited(result.numchecked);
+		// result.shortestPath.map(array => {
+		// 	array.forEach(item => {
+		// 		console.log(item);
+		// 	});
+		// });
 	};
 	useEffect(() => {
 		if (searchResult) {
@@ -84,7 +92,6 @@ export default function Home() {
 	
 		return { nodes, links };
 	}
-	
 	const ForceGraph: React.FC<ForceGraphProps> = ({ nodes, links }) => {
 		const svgRef = useRef<SVGSVGElement>(null);
 	
@@ -125,7 +132,6 @@ export default function Home() {
 				});
 	
 			const content = svg.append("g").attr("class", "content");
-	
 			const depthIndices = {};
 			nodes.forEach(node => {
 				if (depthIndices[node.group] === undefined) depthIndices[node.group] = 0;
@@ -133,12 +139,11 @@ export default function Home() {
 				node.x = 150 + 200 * node.group; 
 				node.y = 100 + 100 * depthIndices[node.group]; 
 			});
-	
 			const simulation = d3.forceSimulation(nodes)
-				.force("link", d3.forceLink(links).id((d) => d.id).distance(400))
-				.force("charge", d3.forceManyBody())
-				.force("center", d3.forceCenter(width / 2, height / 2));
-	
+			.force("link", d3.forceLink(links).id((d) => d.id).distance(400).strength(1))
+			.force("charge", d3.forceManyBody().strength(-500))
+			.force("center", d3.forceCenter(width / 2, height / 2));
+			simulation.force("collide", d3.forceCollide(20 * 1.2));
 			const link = content.append("g")
 				.selectAll("line")
 				.data(links)
@@ -149,14 +154,23 @@ export default function Home() {
 	
 			const nodeRadius = 20;
 			const node = content.append("g")
-				.selectAll("circle")
-				.data(nodes)
-				.join("circle")
-				.attr("r", nodeRadius)
-				.attr("fill", d => depthColorMapping[d.group] || '#000')
-				.attr("stroke", "#0E1111")
-				.attr("stroke-width", 5)
-				.call(drag(simulation));
+			.selectAll("circle")
+			.data(nodes)
+			.join("circle")
+			.attr("r", nodeRadius)
+			.attr("fill", d => depthColorMapping[d.group] || '#000')
+			.attr("stroke", "#0E1111")
+			.attr("stroke-width", 5)
+			.style("cursor", "pointer")
+			.on("click", (event, d) => {
+				if (d.id) {
+					const url = `https://en.wikipedia.org/wiki/${encodeURIComponent(d.id)}`;
+					window.open(url, '_blank');
+				} else {
+					console.error('Node ID is undefined:', d);
+				}
+			})
+			.call(drag(simulation));
 	
 			const labels = content.append("g")
 				.selectAll("text")
@@ -257,6 +271,6 @@ export default function Home() {
 			<div className="Graph bg-[#212122] w-[90%] h-[700px] m-auto rounded-xl ml-20 mr-20 mb-10">
 				{searchResult && <ForceGraph {...searchResult} />}
 			</div>
-		</main>
+			</main>
 	);
 }
