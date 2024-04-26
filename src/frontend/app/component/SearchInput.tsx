@@ -51,6 +51,8 @@ const SearchInput: React.FC<SearchInputProps> = ({ onSearchResult, id }) => {
 	const swapSearchTerms = () => {
 		setSearchTerm1(searchTerm2);
 		setSearchTerm2(searchTerm1);
+		setLink1(showLink2);
+		setLink2(showLink1);
 	};
 	useEffect(() => {
 		const timerId = setTimeout(() => {
