@@ -14,7 +14,7 @@ const LoadingScreen: React.FC = () => {
                     height={400} 
                     className='opacity-80 rounded-2xl'
                 />
-                <div className="mx-auto text-white text-2xl text-[#7e5fff] font-semibold">
+                <div className="mx-auto text-white text-2xl text-[#7e5fff] font-semibold" style={{ color:"#7E5FFF"}}>
                     Loading, please wait...
                 </div>
             </div>

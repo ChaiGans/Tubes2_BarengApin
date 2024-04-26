@@ -69,7 +69,20 @@ const SearchInput: React.FC<SearchInputProps> = ({ onSearchResult, id }) => {
 
 		return () => clearTimeout(timerId);
 	}, [searchTerm1]);
-
+    const handleSearchChange1 = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const formattedInput = e.target.value.trim().replace(/ /g, '_');
+		const capitalizedInput = formattedInput.charAt(0).toUpperCase() + formattedInput.slice(1);
+        const url = `https://en.wikipedia.org/wiki/${capitalizedInput}`;
+        setSearchTerm1(e.target.value);
+        setLink1(url);  
+    };
+	const handleSearchChange2 = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const formattedInput = e.target.value.trim().replace(/ /g, '_');
+		const capitalizedInput = formattedInput.charAt(0).toUpperCase() + formattedInput.slice(1);
+        const url = `https://en.wikipedia.org/wiki/${capitalizedInput}`;
+        setSearchTerm2(e.target.value);
+        setLink2(url);  
+    };
 	useEffect(() => {
 		const timerId = setTimeout(() => {
 			if (searchTerm2) {
@@ -110,46 +123,72 @@ const SearchInput: React.FC<SearchInputProps> = ({ onSearchResult, id }) => {
 			return [];
 		}
 	};
-	const handleSubmit = async () => {
-		let algoChoice;
-		if (searchMethod === "BFS" && pathing === "SinglePath") {
-			algoChoice = 2;
-		} else if (searchMethod === "BFS" && pathing === "MultiplePath") {
-			algoChoice = 4;
-		} else if (searchMethod === "IDS" && pathing === "SinglePath") {
-			algoChoice = 1;
-		} else if (searchMethod === "IDS" && pathing === "MultiplePath") {
-			algoChoice = 3;
-		}
-		const data = {
-			StartTitleLink: showLink1,
-			GoalTitleLink: showLink2,
-			AlgoChoice: algoChoice,
-		};
-		setIsLoading(true);
-		try {
-			console.log(data);
-			console.log("button clicked");
-			const response = await fetch("http://localhost:8080/", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(data),
-			});
-			console.log("waiting bos");
-			if (!response.ok) {
-				throw new Error("Network response was not ok.");
-			}
-			const result = await response.json();
-			console.log("uda dapat");
-			onSearchResult(result);
-		} catch (error) {
-			console.error("Failed to fetch data:", error);
-		} finally {
-			setIsLoading(false); 
-		}
-	};
+const handleSubmit = async () => {
+    let algoChoice;
+    if (searchMethod === "BFS" && pathing === "SinglePath") {
+        algoChoice = 2;
+    } else if (searchMethod === "BFS" && pathing === "MultiplePath") {
+        algoChoice = 4;
+    } else if (searchMethod === "IDS" && pathing === "SinglePath") {
+        algoChoice = 1;
+    } else if (searchMethod === "IDS" && pathing === "MultiplePath") {
+        algoChoice = 3;
+    }
+
+    // Function to check if a Wikipedia link is valid
+    const validateLink = async (link:string) => {
+        const pageTitle = link.split('/wiki/')[1];
+        const apiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${pageTitle}`;
+        try {
+            const response = await fetch(apiUrl);
+            return response.ok; // Returns true if page exists, false otherwise
+        } catch (error) {
+            console.error('Error checking link:', link, error);
+            return false; // Assume link is invalid if there's an error
+        }
+    };
+
+    setIsLoading(true);
+    try {
+        // Validate links
+        const isValidLink1 = await validateLink(showLink1);
+        const isValidLink2 = await validateLink(showLink2);
+
+        if (!isValidLink1 || !isValidLink2) {
+            alert('One or more provided Wikipedia links are invalid.');
+            return; // Exit the function if any link is invalid
+        }
+
+        const data = {
+            StartTitleLink: showLink1,
+            GoalTitleLink: showLink2,
+            AlgoChoice: algoChoice,
+        };
+
+        console.log(data);
+        console.log("button clicked");
+
+        const response = await fetch("http://localhost:8080/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+        });
+
+        console.log("waiting bos");
+        if (!response.ok) {
+            throw new Error("Network response was not ok.");
+        }
+        const result = await response.json();
+        console.log("uda dapat");
+        onSearchResult(result);
+    } catch (error) {
+        console.error("Failed to fetch data:", error);
+    } finally {
+        setIsLoading(false); 
+    }
+};
 	return (
 		<div className="p-4 ml-20 mr-20" id={id}>
 			{isLoading && (
@@ -165,7 +204,7 @@ const SearchInput: React.FC<SearchInputProps> = ({ onSearchResult, id }) => {
 				<input
 					type="text"
 					value={searchTerm1}
-					onChange={(e) => setSearchTerm1(e.target.value)}
+					onChange={handleSearchChange1}
 					onFocus={() => setShowSuggestions1(true)}
 					className="w-full p-2 mb-4 text-white font-bold bg-[#212122] rounded-md focus:border-[#7E5FFF] focus:border-2 placeholder-[#7E5FFF] focus:outline-none"
 					placeholder="Search Wikipedia"
@@ -211,7 +250,7 @@ const SearchInput: React.FC<SearchInputProps> = ({ onSearchResult, id }) => {
 				<input
 					type="text"
 					value={searchTerm2}
-					onChange={(e) => setSearchTerm2(e.target.value)}
+					onChange={handleSearchChange2}
 					onFocus={() => setShowSuggestions2(true)}
 					className="w-full p-2 mb-4 text-white font-bold bg-[#212122] rounded-md focus:border-[#7E5FFF] focus:border-2 placeholder-[#7E5FFF] focus:outline-none"
 					placeholder="Search Wikipedia"
