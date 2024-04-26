@@ -150,6 +150,10 @@ func bfsMultiPath(startURL, targetURL string) ([][]string, int, int, int64, erro
                         foundLevel = len(path)
                     }
                     if foundLevel != -1 && len(path) >= foundLevel {
+                        if !visited[link] {
+                            visited[link] = true
+                            numChecked++
+                        }
                         continue
                     }
                     if !visited[link] {
