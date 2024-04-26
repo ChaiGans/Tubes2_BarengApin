@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 )
@@ -27,23 +28,24 @@ func MultiDLS(depth int, startLink, goalLink string, currentDepth int, path []st
 
     for _, link := range links {
         if !visited[link] {
-            // log.Printf("Visiting new link: %s, Total links visited: %d, At depth : %d", link, len(visited), depth)
+            log.Printf("Visiting new link: %s, Total links visited: %d, At depth : %d, Current len(multiplepathsave) : %d", link, len(visited), depth, len(*multiple_path_save))
             visited[link] = true
+
+            if strings.EqualFold(link, goalLink) {
+                *multiple_path_save = append(*multiple_path_save, append(path, link))
+            } else {
+                new_path := append([]string{}, path...)
+                new_path = append(new_path, link)
+                err := MultiDLS(depth, link, goalLink, currentDepth+1, new_path, visited, cache, multiple_path_save)
+                if err != nil {
+                    // log.Printf("Error at link %s: %v", link, err)
+                }
+		    }
         } else {
-            // log.Printf("visit alreaddy link : %s", link)
-            continue
+            log.Printf("Skipping current link already visited: %s, Total links visited: %d", link, len(visited))
         }
 
-        if strings.EqualFold(link, goalLink) {
-			*multiple_path_save = append(*multiple_path_save, append(path, link))
-        } else {
-			new_path := append([]string{}, path...)
-        	new_path = append(new_path, link)
-			err := MultiDLS(depth, link, goalLink, currentDepth+1, new_path, visited, cache, multiple_path_save)
-            if err != nil {
-                // log.Printf("Error at link %s: %v", link, err)
-            }
-		}
+        visited[link] = false
     }
 
     if len(*multiple_path_save) > 0 {

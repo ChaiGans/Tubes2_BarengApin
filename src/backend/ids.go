@@ -62,23 +62,24 @@ func DLS(depth int, startLink, goalLink string, currentDepth int, path []string,
 
     for _, link := range links {
         if !visited[link] {
-            // log.Printf("Visiting new link: %s, Total links visited: %d, At depth : %d", link, len(visited), depth)
+            // log.Printf("Visiting new link: %s, Total links visited: %d, At depth : %d, Current len(multiplepathsave) : %d", link, len(visited), depth)
             visited[link] = true
+
+            if strings.EqualFold(link, goalLink) {
+                return append(path, link), nil
+            } else {
+                new_path := append([]string{}, path...)
+                new_path = append(new_path, link)
+                res, err := DLS(depth, link, goalLink, currentDepth+1, new_path, visited, cache)
+                if err == nil {
+                    return res, nil
+                }
+		    }
         } else {
-            // log.Printf("visit alreaddy link : %s", link)
-            continue
+            // log.Printf("Skipping current link already visited: %s, Total links visited: %d", link, len(visited))
         }
 
-        if strings.EqualFold(link, goalLink) {
-            return append(path, link), nil
-        }
-
-        new_path := append([]string{}, path...)
-        new_path = append(new_path, link)
-        result, err := DLS(depth, link, goalLink, currentDepth+1, new_path, visited, cache)
-        if err == nil {
-            return result, nil
-        }
+        visited[link] = false
     }
 
     return nil, fmt.Errorf("goal not found at depth %d", depth)
