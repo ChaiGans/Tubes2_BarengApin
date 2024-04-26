@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math/rand"
 	"regexp"
-	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -12,53 +11,6 @@ import (
 	"github.com/gocolly/colly/v2"
 )
 
-// fetchLinks uses Colly to scrape Wikipedia for links on a given page.
-func fetchLinks(startUrl string) ([]string, error) {
-    links := []string{}
-
-    // Define the namespaces to be excluded
-    excludedNamespaces := []string{
-        "Category:", "Wikipedia:", "File:", "Help:", "Portal:",
-        "Special:", "Talk:", "User:","Template:", "Template_talk:", "Main_Page",
-    }
-
-    c := colly.NewCollector(
-        colly.AllowedDomains("en.wikipedia.org"),
-        colly.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"),
-    )
-
-    c.OnHTML("a[href]", func(e *colly.HTMLElement) {
-        link := e.Attr("href")
-        if strings.HasPrefix(link, "/wiki/") && !strings.Contains(link, ":") {
-            exclude := false
-            for _, namespace := range excludedNamespaces {
-                if strings.Contains(link, namespace) {
-                    exclude = true
-                    break
-                }
-            }
-            if (!exclude) {
-                fullLink := "https://en.wikipedia.org" + link
-                if (!slices.Contains(links, fullLink)) {
-                    links = append(links, fullLink)
-                }
-            }
-        }
-    })
-
-    // fmt.Println("Visiting URL:", startUrl)
-    err := c.Visit(startUrl)
-    if err != nil {
-        return nil, err
-    }
-    c.Wait()
-    return links, nil
-}
-
-
-// INI VERSI 2
-
-// List of user agents to rotate 
 var userAgents = []string{
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.246",
     "Mozilla/5.0 (X11; CrOS x86_64 8172.45.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.64 Safari/537.36",
@@ -96,6 +48,10 @@ func scrapeWikipediaLinks(url string) ([]string, error) {
     wikiArticleRegex := regexp.MustCompile(`^https?://en\.wikipedia\.org/wiki/([^#:\s]+)$`)
 
     c.OnHTML("a[href]", func(e *colly.HTMLElement) {
+        if !checkDisplayNone(e) {
+            return 
+        }
+
         link := e.Request.AbsoluteURL(e.Attr("href"))
         if wikiArticleRegex.MatchString(link) {
             exclude := false
@@ -130,6 +86,34 @@ func scrapeWikipediaLinks(url string) ([]string, error) {
     c.Wait() 
     return MakeUnique(links), err 
 }
+func contains(slice []string, item string) bool {
+    for _, s := range slice {
+        if s == item {
+            return true
+        }
+    }
+    return false
+}
+
+func checkDisplayNone(e *colly.HTMLElement) bool {
+    class := e.Attr("class")
+    classes := strings.Split(class, " ")
+    if contains(classes, "nowraplinks") {
+        return false
+    }
+
+    // Check parent elements 
+    for parent := e.DOM.Parent(); parent.Length() != 0; parent = parent.Parent() {
+        parentClass, found := parent.Attr("class")
+        parentClass = strings.ReplaceAll(parentClass, " ", "")
+        if found && strings.Contains(parentClass, "nowraplinks") {
+            // fmt.Println(e.Attr("href"))
+            return false
+        }
+    }
+    return true
+}
+
 
 func MakeUnique(strings []string) []string {
     uniqueMap := make(map[string]bool)

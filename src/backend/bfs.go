@@ -14,7 +14,6 @@ func bfs(startURL, targetURL string) ([]string, int, int, int64, error) {
     visited := make(map[string]bool)
     visited[startURL] = true
     numChecked := 0
-    // articleRequested := 0
 
     queue := [][]string{{startURL}}
     results := make(chan []string)
@@ -32,10 +31,6 @@ func bfs(startURL, targetURL string) ([]string, int, int, int64, error) {
 
         for _, path := range paths {
             currentURL := path[len(path)-1]
-
-            // mu.Lock()
-            // articleRequested++ 
-            // mu.Unlock()
 
             links, err := scrapeWikipediaLinks(currentURL)
 
@@ -105,7 +100,7 @@ func bfsMultiPath(startURL, targetURL string) ([][]string, int, int, int64, erro
     numChecked := 0
 
     queue := [][]string{{startURL}}
-    resultsMap := make(map[string][]string) // Use a map to ensure uniqueness of paths
+    resultsMap := make(map[string][]string) 
     var results [][]string
     foundLevel := -1
 
@@ -177,7 +172,6 @@ func bfsMultiPath(startURL, targetURL string) ([][]string, int, int, int64, erro
     return nil, 0, numChecked, duration, fmt.Errorf("no path found from %s to %s", startURL, targetURL)
 }
 
-// Helper function to create a unique signature for each path based on its content
 func createPathSignature(path []string) string {
     signature := ""
     for _, p := range path {

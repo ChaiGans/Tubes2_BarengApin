@@ -38,7 +38,7 @@ func MultiDLS(depth int, startLink, goalLink string, currentDepth int, path []st
                 new_path = append(new_path, link)
                 err := MultiDLS(depth, link, goalLink, currentDepth+1, new_path, visited, cache, multiple_path_save)
                 if err != nil {
-                    log.Printf("Error at link %s", link)
+                    log.Printf("Error at link %s : %v", link, err)
                 }
 		    }
         } 
