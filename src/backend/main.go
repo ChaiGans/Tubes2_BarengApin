@@ -20,7 +20,7 @@ type Result struct {
 	Message     string   `json:"message"`
 	ShortestPath [][]string `json:"shortestPath,omitempty"`
 	ExecTime int64 `json:"exectime,omitempty"`
-	NumChecked int `json:"numchecked,omitempty"`
+	NumChecked int `json:"numchecked"`
 }
 
 func main() {
