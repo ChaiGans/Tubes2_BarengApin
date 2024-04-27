@@ -203,7 +203,7 @@ export default function Home() {
 				.selectAll("text")
 				.data(nodes)
 				.join("text")
-				.text((d) => d.id)
+				.text((d) => d.id.replace(/_/g, ' '))
 				.attr("x", (d) => d.x + nodeRadius + 5)
 				.attr("y", (d) => d.y + nodeRadius / 2)
 				.attr("fill", "white")
