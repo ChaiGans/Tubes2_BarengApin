@@ -78,7 +78,7 @@ To run this project, you will need to perform several installations, including:
 - `Go language version 1.18 or higher` : This is necessary if your project involves server-side development using the Go programming language. Go is used for building the backend of web applications.
 - `Docker`: This is platform that allows developers to package and distribute applications and their dependencies in isolated containers.
 
-**NOTE : It is a must to have docker to run this project. So, download [Docker](https://www.docker.com/products/docker-desktop/) in the internet first, before continuing to the program**
+**NOTE : It is recommended to have docker to run this project. So, download [Docker](https://www.docker.com/products/docker-desktop/) in the internet first, before continuing to the program**
 
 ## Installation With Docker
 

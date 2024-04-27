@@ -73,15 +73,15 @@ func scrapeWikipediaLinks(url string) ([]string, error) {
     var err error
     for i := 0; i < 3; i++ {
         err = c.Visit(url)
+        if err == nil {
+            break
+        }
         c.OnError(func(r *colly.Response, err error) {
             fmt.Println("Request URL:", r.Request.URL, "Error:", err)
         })
-        if err == nil {
-            // fmt.Println("done")
-            break 
-        }
-        fmt.Println("Retrying:", url, "Attempt:", i+1)
-        time.Sleep(time.Millisecond * 500) 
+        sleepDuration := time.Millisecond * time.Duration(500 * (1 << i)) 
+        fmt.Println("Retrying:", url, "Attempt:", i+1, "after", sleepDuration)
+        time.Sleep(sleepDuration)
     }
 
     c.Wait() 

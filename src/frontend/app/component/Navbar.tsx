@@ -7,7 +7,7 @@ export default function Navbar() {
 			<ul className="flex gap-10 text-white bg-[#212122] px-8 py-3 rounded-3xl font-Roboto font-black">
 				<li className="cursor-pointer hover:text-[#7E5FFF]">Home</li>
 				<li className="cursor-pointer hover:text-[#7E5FFF]">
-                    <a href="/docs/tes.pdf" download="YourDocumentName.pdf">
+                    <a href="/BarengApin.pdf" download>
                         Docs
                     </a>
                 </li>
