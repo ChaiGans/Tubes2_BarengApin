@@ -28,6 +28,7 @@ export default function Home() {
 	const [searchResult, setSearchResult] = useState<ForceGraphProps | null>(
 		null
 	);
+	const [Details,setDetails] = useState<string[][]>([]);
 	const [initialResult, setInitialResult] = useState<string[][]>([]);
 	const [Duration, setDuration] = useState(null);
 	const [Timevisited, setTimevisited] = useState(null);
@@ -37,7 +38,7 @@ export default function Home() {
 	const servicesRef = useRef(null);
 	const aboutUsRef = useRef(null);
 	const repositoryRef = useRef(null);
-	const handleSearchResult = (result: any) => {
+	const handleSearchResult = async (result: any) => {
 		console.log(result);
 		const d3FormattedData = transformResultToD3Format(JSON.stringify(result));
 		setInitialResult(result.shortestPath);
@@ -45,11 +46,36 @@ export default function Home() {
 		setSearchResult(d3FormattedData);
 		setDuration(result.exectime);
 		setTimevisited(result.numchecked);
-		// result.shortestPath.map(array => {
-		// 	array.forEach(item => {
-		// 		console.log(item);
-		// 	});
-		// });
+		try {
+			const formattedDetails = await fetchWikiDetailsSequential(result.shortestPath);
+			setDetails(formattedDetails);
+		} catch (error) {
+			console.error("Failed to fetch details:", error);
+		}
+	};
+	const extractTitleFromUrl = (url: string) => {
+		const matches = url.match(/\/wiki\/([^#]+)/);
+		return matches ? matches[1] : "";
+	};
+	const fetchWikiDetailsSequential = async (urls: string[][]) => {
+		console.log(urls);
+		const allDetails = [];
+		for (const urlGroup of urls) {
+			const groupDetails = [];
+			for (const url of urlGroup) {
+				const title = extractTitleFromUrl(url);
+				const response = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${title}`);
+				const data = await response.json();
+				groupDetails.push({
+					title: data.title,
+					url: url,
+					description: data.extract,
+					image: data.thumbnail ? data.thumbnail.source : "",
+				});
+			}
+			allDetails.push(groupDetails);
+		}
+		return allDetails;
 	};
 	useEffect(() => {
 		if (searchResult) {
@@ -270,6 +296,39 @@ export default function Home() {
 			</div>
 			<div className="Graph bg-[#212122] w-[90%] h-[700px] m-auto rounded-xl ml-20 mr-20 mb-10">
 				{searchResult && <ForceGraph {...searchResult} />}
+			</div>
+			<div className="p-10 ml-10 mr-[40px] rounded-xl">
+			<div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+				{Details.length > 0 && Details.map((detail, index) => (
+				<div key={index} className="bg-[#212122] p-5 rounded-lg space-y-4 border-2 border-[#7E5FFF]">
+					{detail.map((item, itemIndex) => (
+					<div key={item.id} className="flex flex-col">
+						<div className="group flex ">
+						<div className="flex-none h-24 w-24 my-3">
+							<a href={item.url} target="_blank">
+						<img 
+						src={item.image || '/no-image.png'}
+						alt={item.name} 
+						className="object-cover h-full w-full" 
+						/></a>
+						</div>
+						<div className="group2 pr-10 ml-4">
+						<h3 className="text-[#FF1178] text-lg font-semibold">{item.title}</h3>
+						<h3 className="text-[#7e5fff] text-sm font-normal">
+						{item.description.length > 100
+						? `${item.description.substring(0, 100)}...`
+						: item.description}
+						</h3>
+						</div>
+						</div>
+						<div className="w-full">
+						<div className="h-2 bg-[#7E5FFF] mb-2 mt-2"></div>
+						</div>
+					</div>
+					))}
+				</div>
+				))}
+			</div>
 			</div>
 			</main>
 	);
