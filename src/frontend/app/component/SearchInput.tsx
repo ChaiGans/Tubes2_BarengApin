@@ -166,7 +166,14 @@ const handleSubmit = async () => {
             alert('One or more provided Wikipedia links are invalid.');
             return; // Exit the function if any link is invalid
         }
-
+		if (searchTerm1 == searchTerm2){
+			alert('Same Hyperlink detected, Search cancelled');
+            return; // Exit the function if any link is invalid
+		}
+		if (showLink1 == showLink2){
+			alert('Same Hyperlink detected, Search cancelled');
+            return; // Exit the function if any link is invalid
+		}
         const data = {
             StartTitleLink: showLink1,
             GoalTitleLink: showLink2,
