@@ -90,26 +90,23 @@ export default function Home() {
 		const result = JSON.parse(resultJson);
 		const paths: string[][] = result.shortestPath;
 		console.log(paths);
-		const nodeSet = new Map<string, number>(); 
+		const nodeSet = new Map<string, number>();
 		const links: Link[] = [];
+		
 		paths.forEach((path: string[]) => {
 			path.forEach((url, index) => {
-				const nodeName = decodeURIComponent(
-					new URL(url).pathname.split("/").pop()!
-				);
+				const nodeName = decodeURIComponent(extractTitleFromUrl(url));
 				if (!nodeSet.has(nodeName) || nodeSet.get(nodeName)! > index) {
 					nodeSet.set(nodeName, index);
 				}
 	
 				if (index < path.length - 1) {
 					const nextUrl = path[index + 1];
-					const nextNodeName = decodeURIComponent(
-						new URL(nextUrl).pathname.split("/").pop()!
-					);
+					const nextNodeName = decodeURIComponent(extractTitleFromUrl(nextUrl));
 					links.push({
 						source: nodeName,
 						target: nextNodeName,
-						value: 1, 
+						value: 1,
 					});
 				}
 			});
@@ -307,10 +304,10 @@ export default function Home() {
 			</div>
 			<div className="p-10 ml-10 mr-[40px] rounded-xl">
 			<div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-				{!detailParam &&(
+				{!detailParam &&	(
 					<p className="text-xl font-black" style={{ color: "#7E5FFF" }}>Generating image...</p>
 				)}
-				{Details.length > 0 && detailParam && Details.map((detail, index) => (
+				{Details && Details.length > 0 && detailParam && Details.map((detail, index) => (
 				<div key={index} className="bg-[#212122] p-5 rounded-lg space-y-4 border-2 border-[#7E5FFF]">
 					{detail.map((item, itemIndex) => (
 					<div key={item.id} className="flex flex-col">
@@ -326,7 +323,7 @@ export default function Home() {
 						<div className="group2 pr-10 ml-4">
 						<h3 className="text-[#FF1178] text-lg font-semibold">{item.title}</h3>
 						<h3 className="text-[#7e5fff] text-sm font-normal">
-						{item.description.length > 100
+						{item.description && item.description.length > 100
 						? `${item.description.substring(0, 100)}...`
 						: item.description}
 						</h3>
