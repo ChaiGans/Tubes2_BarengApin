@@ -36,7 +36,8 @@ func scrapeWikipediaLinks(url string) ([]string, error) {
     })
 
     c.UserAgent = getRandomUserAgent()
-
+    c.CacheDir = "./cache"
+    
     var links []string 
     var mu sync.Mutex 
 
