@@ -343,7 +343,8 @@ const handleSubmit = async () => {
 					width={35}
 					height={35}
 					alt="Globe"
-					className="absolute top-[52px] left-[135px] transform -scale-x-100"
+					className="absolute top-[52px] left-[135px] transform -scale-x-100 cursor-pointer"
+					onClick={handleSubmit}
 				/>
 			</div>
 		</div>
