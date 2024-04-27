@@ -69,17 +69,25 @@ const SearchInput: React.FC<SearchInputProps> = ({ onSearchResult, id }) => {
 
 		return () => clearTimeout(timerId);
 	}, [searchTerm1]);
-    const handleSearchChange1 = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const formattedInput = e.target.value.trim().replace(/ /g, '_');
-		const capitalizedInput = formattedInput.charAt(0).toUpperCase() + formattedInput.slice(1);
-        const url = `https://en.wikipedia.org/wiki/${capitalizedInput}`;
+	const handleSearchChange1 = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const formattedInput = e.target.value.trim().replace(/ /g, '_');
+		const words = formattedInput.split('_');
+		const capitalizedWords = words.map(word => 
+			word.charAt(0).toUpperCase() + word.slice(1)
+		);
+		const capitalizedInput = capitalizedWords.join('_');
+		const url = `https://en.wikipedia.org/wiki/${capitalizedInput}`;
         setSearchTerm1(e.target.value);
         setLink1(url);  
     };
 	const handleSearchChange2 = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const formattedInput = e.target.value.trim().replace(/ /g, '_');
-		const capitalizedInput = formattedInput.charAt(0).toUpperCase() + formattedInput.slice(1);
-        const url = `https://en.wikipedia.org/wiki/${capitalizedInput}`;
+		const formattedInput = e.target.value.trim().replace(/ /g, '_');
+		const words = formattedInput.split('_');
+		const capitalizedWords = words.map(word => 
+			word.charAt(0).toUpperCase() + word.slice(1)
+		);
+		const capitalizedInput = capitalizedWords.join('_');
+		const url = `https://en.wikipedia.org/wiki/${capitalizedInput}`;
         setSearchTerm2(e.target.value);
         setLink2(url);  
     };

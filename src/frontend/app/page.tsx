@@ -1,5 +1,6 @@
 // @ts-nocheck
 "use client";
+import Head from 'next/head';
 import React, { useState, useEffect, useRef } from "react";
 import Navbar from "./component/Navbar";
 import Image from 'next/image';
@@ -32,6 +33,7 @@ export default function Home() {
 	const [initialResult, setInitialResult] = useState<string[][]>([]);
 	const [Duration, setDuration] = useState(null);
 	const [Timevisited, setTimevisited] = useState(null);
+	const [detailParam, setDetailParam] = useState<boolean>(true);
 	const homeRef = useRef(null);
 	const [Path, setNumPath] = useState(null);
 	const docsRef = useRef(null);
@@ -47,8 +49,10 @@ export default function Home() {
 		setDuration(result.exectime);
 		setTimevisited(result.numchecked);
 		try {
+			setDetailParam(false);
 			const formattedDetails = await fetchWikiDetailsSequential(result.shortestPath);
 			setDetails(formattedDetails);
+			setDetailParam(true);
 		} catch (error) {
 			console.error("Failed to fetch details:", error);
 		}
@@ -277,6 +281,10 @@ export default function Home() {
 	
 	return (
 		<main className=" min-h-screen bg-[#0E1111] pb-20">
+			<Head>
+				<title>Hyperlink Search</title>
+				<meta name="description" content="A brief description of your page for SEO" />
+			</Head>
 			<Navbar />
 			<LandingPage></LandingPage>
 			<AboutUs></AboutUs>
@@ -299,7 +307,10 @@ export default function Home() {
 			</div>
 			<div className="p-10 ml-10 mr-[40px] rounded-xl">
 			<div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-				{Details.length > 0 && Details.map((detail, index) => (
+				{!detailParam &&(
+					<p className="text-xl font-black" style={{ color: "#7E5FFF" }}>Generating image...</p>
+				)}
+				{Details.length > 0 && detailParam && Details.map((detail, index) => (
 				<div key={index} className="bg-[#212122] p-5 rounded-lg space-y-4 border-2 border-[#7E5FFF]">
 					{detail.map((item, itemIndex) => (
 					<div key={item.id} className="flex flex-col">
