@@ -129,7 +129,7 @@ cd ./Tubes2_BarengApin/src
 
 3. Open another terminal in the same folder directory. Now, you should have two terminals open, both in the Tubes2_BarengApin/src directory.
 
-First Terminal (To run the backend server)
+First Terminal (To run the frontend server)
 
 1. Change directory to the frontend folder and execute the following commands
 

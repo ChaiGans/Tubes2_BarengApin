@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 )
@@ -41,7 +42,7 @@ func bfs(startURL, targetURL string) ([]string, int, int, int64, error) {
             }
         
             for _, link := range links {
-                if link == targetURL {
+                if strings.EqualFold(link, targetURL) {
                     results <- append(path, link)
                     return
                 }
